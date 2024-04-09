@@ -21,7 +21,7 @@ public class RedisOperations {
   private final Logger LOGGER = LoggerFactory.getLogger(RedisOperations.class);
   public void dynamicCommand(@Connection LettuceRedisConnection connection,
                              String command,
-                             CompletionCallback<Object, Void> callback) {
+                             CompletionCallback<Void, Void> callback) {
     // dispatch
   }
 
