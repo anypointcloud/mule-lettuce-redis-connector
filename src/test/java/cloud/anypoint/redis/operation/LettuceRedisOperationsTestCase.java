@@ -7,9 +7,6 @@ import org.junit.Test;
 
 public class LettuceRedisOperationsTestCase extends MuleArtifactFunctionalTestCase {
 
-  /**
-   * Specifies the mule config xml with the flows that are going to be executed in the tests, this file lives in the test resources.
-   */
   @Override
   protected String getConfigFile() {
     return "test-mule-config.xml";

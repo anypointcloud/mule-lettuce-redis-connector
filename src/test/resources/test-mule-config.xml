@@ -1,12 +1,12 @@
 <mule xmlns="http://www.mulesoft.org/schema/mule/core"
       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-      xmlns:realredis="http://www.mulesoft.org/schema/mule/realredis"
+      xmlns:lettuce="http://www.mulesoft.org/schema/mule/lettuce"
       xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
-          http://www.mulesoft.org/schema/mule/realredis http://www.mulesoft.org/schema/mule/realredis/current/mule-realredis.xsd">
+          http://www.mulesoft.org/schema/mule/lettuce http://www.mulesoft.org/schema/mule/lettuce/current/mule-lettuce.xsd">
 
-    <realredis:config name="config" configId="configId">
-        <realredis:connection requiredParameter="aValue" />
-    </realredis:config>
+    <lettuce:config name="config" >
+        <lettuce:connection host="x" port="6379" password="x"/>
+    </lettuce:config>
 
 
 </mule>
