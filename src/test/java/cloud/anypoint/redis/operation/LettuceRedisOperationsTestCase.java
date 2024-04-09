@@ -5,7 +5,7 @@ import static org.hamcrest.core.Is.is;
 import org.mule.functional.junit4.MuleArtifactFunctionalTestCase;
 import org.junit.Test;
 
-public class RealRedisOperationsTestCase extends MuleArtifactFunctionalTestCase {
+public class LettuceRedisOperationsTestCase extends MuleArtifactFunctionalTestCase {
 
   /**
    * Specifies the mule config xml with the flows that are going to be executed in the tests, this file lives in the test resources.
@@ -17,6 +17,6 @@ public class RealRedisOperationsTestCase extends MuleArtifactFunctionalTestCase 
 
   @Test
   public void placeholder() {
-    
+
   }
 }

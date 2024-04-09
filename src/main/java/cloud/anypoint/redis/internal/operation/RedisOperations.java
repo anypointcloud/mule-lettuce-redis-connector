@@ -1,5 +1,5 @@
 package cloud.anypoint.redis.internal.operation;
 
-public class RealRedisOperations {
+public class RedisOperations {
   public void jsonSet() {}
 }
