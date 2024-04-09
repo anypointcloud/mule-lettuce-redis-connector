@@ -19,7 +19,9 @@ import java.util.Map;
 public class RedisOperations {
 
   private final Logger LOGGER = LoggerFactory.getLogger(RedisOperations.class);
-  public void jsonSet(@Connection LettuceRedisConnection connection) {
+  public void dynamicCommand(@Connection LettuceRedisConnection connection,
+                             String command,
+                             CompletionCallback<Object, Void> callback) {
     // dispatch
   }
 
