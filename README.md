@@ -1,4 +1,4 @@
-# Real Mule Redis Connector
+# Mule Lettuce Redis Connector
 
 A low level connector providing mule applications the ability to use redis commands directly.
 
@@ -8,7 +8,7 @@ Add this dependency to your application pom.xml
 
 ```
 <groupId>cloud.anypoint</groupId>
-<artifactId>mule-real-redis-connector</artifactId>
+<artifactId>mule-lettuce-redis-connector</artifactId>
 <version>0.0.0</version>
 <classifier>mule-plugin</classifier>
 ```
