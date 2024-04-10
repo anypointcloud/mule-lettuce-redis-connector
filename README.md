@@ -1,4 +1,5 @@
 # Mule Lettuce Redis Connector
+![Maven Central](https://img.shields.io/maven-central/v/cloud.anypoint/mule-lettuce-redis-connector)
 
 A low level connector providing mule applications the ability to use redis commands directly.
 
