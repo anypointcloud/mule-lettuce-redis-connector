@@ -1,12 +1,10 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0"
-         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 
     <modelVersion>4.0.0</modelVersion>
     <groupId>cloud.anypoint</groupId>
     <artifactId>mule-lettuce-redis-connector</artifactId>
-    <version>0.0.8-SNAPSHOT</version>
+    <version>0.0.8</version>
     <packaging>mule-extension</packaging>
     <name>Mule Lettuce Redis Connector</name>
     <description>A low level connector providing mule applications the ability to use redis commands directly.</description>
@@ -66,7 +64,7 @@
         <connection>scm:git:git@github.com:anypointcloud/mule-lettuce-redis-connector.git</connection>
         <developerConnection>scm:git:git@github.com:anypointcloud/mule-lettuce-redis-connector.git</developerConnection>
         <url>https://github.com/anypointcloud/mule-lettuce-redis-connector</url>
-        <tag>HEAD</tag>
+        <tag>0.0.8</tag>
     </scm>
 
     <distributionManagement>
