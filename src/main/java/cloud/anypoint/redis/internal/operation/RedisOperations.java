@@ -1,14 +1,16 @@
 package cloud.anypoint.redis.internal.operation;
 
+import cloud.anypoint.redis.internal.commands.CommandReturnType;
+import cloud.anypoint.redis.internal.commands.RuntimeCommand;
 import cloud.anypoint.redis.internal.connection.LettuceRedisConnection;
+import cloud.anypoint.redis.internal.metadata.DynamicCommandOutputTypeResolver;
 import io.lettuce.core.ScoredValue;
 import io.lettuce.core.ZAddArgs;
 import io.lettuce.core.codec.StringCodec;
 import io.lettuce.core.output.StatusOutput;
 import io.lettuce.core.protocol.Command;
-import io.lettuce.core.protocol.CommandType;
-import jdk.internal.org.jline.utils.Status;
-import org.mule.runtime.extension.api.annotation.Alias;
+import org.mule.runtime.extension.api.annotation.metadata.MetadataKeyId;
+import org.mule.runtime.extension.api.annotation.metadata.OutputResolver;
 import org.mule.runtime.extension.api.annotation.param.Connection;
 import org.mule.runtime.extension.api.annotation.param.Content;
 import org.mule.runtime.extension.api.annotation.param.display.DisplayName;
@@ -16,7 +18,6 @@ import org.mule.runtime.extension.api.runtime.operation.Result;
 import org.mule.runtime.extension.api.runtime.process.CompletionCallback;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import reactor.core.publisher.Mono;
 
 import java.util.Map;
 
@@ -25,15 +26,19 @@ public class RedisOperations {
 
     private final Logger LOGGER = LoggerFactory.getLogger(RedisOperations.class);
 
+    @OutputResolver(output = DynamicCommandOutputTypeResolver.class)
     public void sendCommand(@Connection LettuceRedisConnection connection,
                             String command,
-                            CompletionCallback<Void, Void> callback) {
-        // dispatch
-        Command<String, String, String> cmd = new Command<>(CommandType.PING,
-                new StatusOutput<>(StringCodec.UTF8));
-
-        // can we do dynamic return type metadata with a selector argument? Or do we need to make
-        // a bunch of separate operations for different return types (I hope not)
+                            @MetadataKeyId CommandReturnType returnType,
+                            CompletionCallback<Object, Void> callback) {
+        connection.customCommands().dynamic(command, returnType)
+                .subscribe(
+                        (result) -> callback.success(
+                                Result.<Object, Void>builder()
+                                        .output(result)
+                                        .build()),
+                        callback::error
+                );
     }
 
     @DisplayName("ZADD")
