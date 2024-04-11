@@ -19,6 +19,7 @@ import org.mule.runtime.extension.api.runtime.process.CompletionCallback;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.List;
 import java.util.Map;
 
 
@@ -29,9 +30,10 @@ public class RedisOperations {
     @OutputResolver(output = DynamicCommandOutputTypeResolver.class)
     public void sendCommand(@Connection LettuceRedisConnection connection,
                             String command,
+                            List<String> arguments,
                             @MetadataKeyId CommandReturnType returnType,
                             CompletionCallback<Object, Void> callback) {
-        connection.customCommands().dynamic(command, returnType)
+        connection.customCommands().dynamic(command, arguments, returnType)
                 .subscribe(
                         (result) -> callback.success(
                                 Result.<Object, Void>builder()
