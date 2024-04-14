@@ -10,6 +10,6 @@ Add this dependency to your application pom.xml
 ```
 <groupId>cloud.anypoint</groupId>
 <artifactId>mule-lettuce-redis-connector</artifactId>
-<version>0.0.8</version>
+<version>0.0.26</version>
 <classifier>mule-plugin</classifier>
 ```
