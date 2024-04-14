@@ -5,7 +5,7 @@ import static org.hamcrest.core.Is.is;
 import org.mule.functional.junit4.MuleArtifactFunctionalTestCase;
 import org.junit.Test;
 
-public class LettuceRedisOperationsTestCase extends MuleArtifactFunctionalTestCase {
+public class ConnectorFunctionalTestCase extends MuleArtifactFunctionalTestCase {
 
   @Override
   protected String getConfigFile() {
@@ -13,7 +13,5 @@ public class LettuceRedisOperationsTestCase extends MuleArtifactFunctionalTestCa
   }
 
   @Test
-  public void placeholder() {
-
-  }
+  public void emptyConfiguration() { }
 }
