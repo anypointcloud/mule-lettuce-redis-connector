@@ -1,6 +1,6 @@
 package cloud.anypoint.redis.internal.metadata;
 
-import cloud.anypoint.redis.internal.commands.CommandReturnType;
+import cloud.anypoint.redis.api.CommandReturnType;
 import org.mule.metadata.api.model.MetadataType;
 import org.mule.runtime.api.connection.ConnectionException;
 import org.mule.runtime.api.metadata.MetadataContext;

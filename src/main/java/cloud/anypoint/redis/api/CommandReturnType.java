@@ -1,4 +1,4 @@
-package cloud.anypoint.redis.internal.commands;
+package cloud.anypoint.redis.api;
 
 public enum CommandReturnType {
     STATUS,

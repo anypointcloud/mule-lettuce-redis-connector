@@ -1,7 +1,10 @@
 package cloud.anypoint.redis.internal.operation;
 
+import cloud.anypoint.redis.internal.NilValueException;
 import cloud.anypoint.redis.internal.connection.LettuceRedisConnection;
+import cloud.anypoint.redis.internal.metadata.NilErrorTypeProvider;
 import io.lettuce.core.SetArgs;
+import org.mule.runtime.extension.api.annotation.error.Throws;
 import org.mule.runtime.extension.api.annotation.param.Connection;
 import org.mule.runtime.extension.api.annotation.param.Content;
 import org.mule.runtime.extension.api.annotation.param.MediaType;
@@ -9,9 +12,12 @@ import org.mule.runtime.extension.api.annotation.param.Optional;
 import org.mule.runtime.extension.api.annotation.param.display.DisplayName;
 import org.mule.runtime.extension.api.runtime.operation.Result;
 import org.mule.runtime.extension.api.runtime.process.CompletionCallback;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import reactor.core.publisher.Mono;
 
 public class KeyValueOperations {
+    private final Logger LOGGER = LoggerFactory.getLogger(KeyValueOperations.class);
     @DisplayName("SET")
     @MediaType(value = MediaType.TEXT_PLAIN, strict = false)
     public void set(@Connection LettuceRedisConnection connection,
@@ -61,12 +67,22 @@ public class KeyValueOperations {
 
     @DisplayName("GET")
     @MediaType(value = MediaType.TEXT_PLAIN, strict = false)
+    @Throws(NilErrorTypeProvider.class)
     public void get(@Connection LettuceRedisConnection connection,
                     String key,
                     CompletionCallback<String, Void> callback) {
-        connection.commands().get(key).subscribe(
-                result -> callback.success(Result.<String, Void>builder()
-                        .output(result)
-                        .build()),
-                callback::error);
+        LOGGER.debug("GET {}", key);
+        connection.commands().get(key)
+                .switchIfEmpty(Mono.error(new NilValueException("GET", key)))
+                .subscribe(
+                    result -> {
+                        LOGGER.trace("GET result {}", result);
+                        callback.success(Result.<String, Void>builder()
+                                .output(result)
+                                .build());
+                    },
+                    error -> {
+                        LOGGER.warn("GET error {}", error.getMessage());
+                        callback.error(error);
+                    });
     }}
