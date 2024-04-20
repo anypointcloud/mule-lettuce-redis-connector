@@ -1,8 +1,11 @@
 package cloud.anypoint.redis.internal.operation;
 
+import cloud.anypoint.redis.api.CursorResult;
 import cloud.anypoint.redis.internal.NilValueException;
 import cloud.anypoint.redis.internal.connection.LettuceRedisConnection;
 import cloud.anypoint.redis.internal.metadata.NilErrorTypeProvider;
+import io.lettuce.core.ScanArgs;
+import io.lettuce.core.ScanCursor;
 import io.lettuce.core.SetArgs;
 import org.mule.runtime.extension.api.annotation.error.Throws;
 import org.mule.runtime.extension.api.annotation.param.Connection;
@@ -15,6 +18,8 @@ import org.mule.runtime.extension.api.runtime.process.CompletionCallback;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import reactor.core.publisher.Mono;
+
+import java.util.List;
 
 public class KeyValueOperations {
     private final Logger LOGGER = LoggerFactory.getLogger(KeyValueOperations.class);
@@ -32,6 +37,7 @@ public class KeyValueOperations {
                     @Optional @DisplayName("PXAT") Integer pxat,
                     @Optional @DisplayName("KEEPTTL") boolean keepttl,
                     CompletionCallback<String, Void> callback) {
+        LOGGER.debug("SET {}", key);
         SetArgs args = new SetArgs();
         if (xx) {
             args = args.xx();
@@ -85,4 +91,23 @@ public class KeyValueOperations {
                         LOGGER.warn("GET error {}", error.getMessage());
                         callback.error(error);
                     });
-    }}
+    }
+
+    @DisplayName("SCAN")
+    public void scan(@Connection LettuceRedisConnection connection,
+                     Integer cursor,
+                     @Optional String match,
+                     @Optional int count,
+                     @Optional String type,
+                     CompletionCallback<CursorResult<String>, Void> callback) {
+        ScanArgs args = new ScanArgs();
+        connection.commands().scan(ScanCursor.of(cursor.toString()), args)
+                .subscribe(
+                    result -> callback.success(
+                        Result.<CursorResult<String>, Void>builder()
+                            .output(new CursorResult<String>(Integer.parseInt(result.getCursor()), result.getKeys()))
+                            .build()),
+                    callback::error
+                );
+    }
+}
