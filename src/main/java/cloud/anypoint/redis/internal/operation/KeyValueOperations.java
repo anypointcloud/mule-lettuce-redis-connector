@@ -1,12 +1,14 @@
 package cloud.anypoint.redis.internal.operation;
 
-import cloud.anypoint.redis.api.CursorResult;
+import cloud.anypoint.redis.api.ScanAttributes;
 import cloud.anypoint.redis.internal.NilValueException;
 import cloud.anypoint.redis.internal.connection.LettuceRedisConnection;
 import cloud.anypoint.redis.internal.metadata.NilErrorTypeProvider;
+import io.lettuce.core.KeyScanArgs;
 import io.lettuce.core.ScanArgs;
 import io.lettuce.core.ScanCursor;
 import io.lettuce.core.SetArgs;
+import org.mule.runtime.core.api.util.StringUtils;
 import org.mule.runtime.extension.api.annotation.error.Throws;
 import org.mule.runtime.extension.api.annotation.param.Connection;
 import org.mule.runtime.extension.api.annotation.param.Content;
@@ -97,15 +99,28 @@ public class KeyValueOperations {
     public void scan(@Connection LettuceRedisConnection connection,
                      Integer cursor,
                      @Optional String match,
-                     @Optional int count,
+                     @Optional Integer count,
                      @Optional String type,
-                     CompletionCallback<CursorResult<String>, Void> callback) {
-        ScanArgs args = new ScanArgs();
+                     CompletionCallback<List<String>, ScanAttributes> callback) {
+        KeyScanArgs args = new KeyScanArgs();
+        if (!StringUtils.isEmpty(match)) {
+            args.match(match);
+        }
+        if (null != count) {
+            args.limit(count);
+        }
+        if (!StringUtils.isEmpty(type)) {
+            args.type(type);
+        }
         connection.commands().scan(ScanCursor.of(cursor.toString()), args)
                 .subscribe(
                     result -> callback.success(
-                        Result.<CursorResult<String>, Void>builder()
-                            .output(new CursorResult<String>(Integer.parseInt(result.getCursor()), result.getKeys()))
+                        Result.<List<String>, ScanAttributes>builder()
+                            .output(result.getKeys())
+                            .attributes(new ScanAttributes() {{
+                                LOGGER.debug("cursor {}", result.getCursor());
+                                setCursor(Integer.parseInt(result.getCursor()));
+                            }})
                             .build()),
                     callback::error
                 );
