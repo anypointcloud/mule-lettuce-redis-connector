@@ -95,6 +95,19 @@ public class KeyValueOperations {
                     });
     }
 
+    @DisplayName("DEL")
+    public void del(@Connection LettuceRedisConnection connection,
+                    List<String> keys,
+                    CompletionCallback<Long, Void> callback) {
+        connection.commands().del(keys.stream().toArray(String[]::new))
+                .subscribe(
+                        result -> callback.success(Result.<Long, Void>builder()
+                                .output(result)
+                                .build()),
+                        callback::error
+                );
+    }
+
     @DisplayName("SCAN")
     public void scan(@Connection LettuceRedisConnection connection,
                      Integer cursor,
