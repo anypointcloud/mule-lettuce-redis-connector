@@ -14,6 +14,8 @@ import org.mule.runtime.extension.api.runtime.operation.Result;
 import org.mule.runtime.extension.api.runtime.process.CompletionCallback;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import reactor.core.publisher.Flux;
+import reactor.core.publisher.Mono;
 
 import java.util.List;
 
@@ -46,6 +48,23 @@ public class SetOperations {
                                 .build()),
                         callback::error
                 );
+    }
+
+    @DisplayName("SRANDMEMBER")
+    public void srandmember(@Connection LettuceRedisConnection connection,
+                            String key,
+                            @Optional Integer count,
+                            CompletionCallback<List<String>, Void> callback) {
+        Flux<String> cmd = Flux.from(connection.commands().srandmember(key));
+        if (null != count) {
+            cmd = connection.commands().srandmember(key, count);
+        }
+        cmd.collectList().subscribe(
+                result -> callback.success(Result.<List<String>, Void>builder()
+                        .output(result)
+                        .build()),
+                callback::error
+        );
     }
 
     @DisplayName("SSCAN")
