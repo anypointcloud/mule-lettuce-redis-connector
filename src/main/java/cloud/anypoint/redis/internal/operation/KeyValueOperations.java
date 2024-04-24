@@ -95,6 +95,21 @@ public class KeyValueOperations {
                     });
     }
 
+    @DisplayName("MGET")
+    public void mget(@Connection LettuceRedisConnection connection,
+                     List<String> keys,
+                     CompletionCallback<List<String>, Void> callback) {
+        connection.commands().mget(keys.stream().toArray(String[]::new))
+                .map(kv -> kv.getValueOrElse(null))
+                .collectList()
+                .subscribe(
+                        result -> callback.success(Result.<List<String>, Void>builder()
+                                .output(result)
+                                .build()),
+                        callback::error
+                );
+    }
+
     @DisplayName("DEL")
     public void del(@Connection LettuceRedisConnection connection,
                     List<String> keys,
