@@ -34,6 +34,20 @@ public class SetOperations {
                 );
     }
 
+    @DisplayName("SREM")
+    public void srem(@Connection LettuceRedisConnection connection,
+                     String key,
+                     @Content List<String> members,
+                     CompletionCallback<Long, Void> callback) {
+        connection.commands().srem(key, members.stream().toArray(String[]::new))
+                .subscribe(
+                        result -> callback.success(Result.<Long, Void>builder()
+                                .output(result)
+                                .build()),
+                        callback::error
+                );
+    }
+
     @DisplayName("SSCAN")
     public void sscan(@Connection LettuceRedisConnection connection,
                       String key,
