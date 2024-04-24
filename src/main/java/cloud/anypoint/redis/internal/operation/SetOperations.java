@@ -1,8 +1,14 @@
 package cloud.anypoint.redis.internal.operation;
 
+import cloud.anypoint.redis.api.ScanAttributes;
 import cloud.anypoint.redis.internal.connection.LettuceRedisConnection;
+import io.lettuce.core.KeyScanArgs;
+import io.lettuce.core.ScanArgs;
+import io.lettuce.core.ScanCursor;
+import org.mule.runtime.core.api.util.StringUtils;
 import org.mule.runtime.extension.api.annotation.param.Connection;
 import org.mule.runtime.extension.api.annotation.param.Content;
+import org.mule.runtime.extension.api.annotation.param.Optional;
 import org.mule.runtime.extension.api.annotation.param.display.DisplayName;
 import org.mule.runtime.extension.api.runtime.operation.Result;
 import org.mule.runtime.extension.api.runtime.process.CompletionCallback;
@@ -24,6 +30,34 @@ public class SetOperations {
                         result -> callback.success(Result.<Long, Void>builder()
                                 .output(result)
                                 .build()),
+                        callback::error
+                );
+    }
+
+    @DisplayName("SSCAN")
+    public void sscan(@Connection LettuceRedisConnection connection,
+                      String key,
+                      Integer cursor,
+                      @Optional String match,
+                      @Optional Integer count,
+                      CompletionCallback<List<String>, ScanAttributes> callback) {
+        ScanArgs args = new ScanArgs();
+        if (!StringUtils.isEmpty(match)) {
+            args.match(match);
+        }
+        if (null != count) {
+            args.limit(count);
+        }
+        connection.commands().sscan(key, ScanCursor.of(cursor.toString()), args)
+                .subscribe(
+                        result -> callback.success(
+                                Result.<List<String>, ScanAttributes>builder()
+                                        .output(result.getValues())
+                                        .attributes(new ScanAttributes() {{
+                                            LOGGER.debug("cursor {}", result.getCursor());
+                                            setCursor(Integer.parseInt(result.getCursor()));
+                                        }})
+                                        .build()),
                         callback::error
                 );
     }
