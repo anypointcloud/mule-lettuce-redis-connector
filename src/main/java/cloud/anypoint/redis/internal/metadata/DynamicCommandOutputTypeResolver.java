@@ -14,6 +14,7 @@ import java.util.Set;
 
 public class DynamicCommandOutputTypeResolver implements TypeKeysResolver, OutputTypeResolver<CommandReturnType> {
     @Override
+    // FIXME: this needs to use the metadata key
     public MetadataType getOutputType(MetadataContext metadataContext, CommandReturnType commandReturnType) throws MetadataResolvingException, ConnectionException {
         return metadataContext.getTypeBuilder().anyType().build();
     }

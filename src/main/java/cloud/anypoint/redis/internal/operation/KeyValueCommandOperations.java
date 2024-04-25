@@ -5,7 +5,6 @@ import cloud.anypoint.redis.internal.NilValueException;
 import cloud.anypoint.redis.internal.connection.LettuceRedisConnection;
 import cloud.anypoint.redis.internal.metadata.NilErrorTypeProvider;
 import io.lettuce.core.KeyScanArgs;
-import io.lettuce.core.ScanArgs;
 import io.lettuce.core.ScanCursor;
 import io.lettuce.core.SetArgs;
 import org.mule.runtime.core.api.util.StringUtils;
@@ -23,8 +22,8 @@ import reactor.core.publisher.Mono;
 
 import java.util.List;
 
-public class KeyValueOperations {
-    private final Logger LOGGER = LoggerFactory.getLogger(KeyValueOperations.class);
+public class KeyValueCommandOperations {
+    private final Logger LOGGER = LoggerFactory.getLogger(KeyValueCommandOperations.class);
     @DisplayName("SET")
     @MediaType(value = MediaType.TEXT_PLAIN, strict = false)
     public void set(@Connection LettuceRedisConnection connection,

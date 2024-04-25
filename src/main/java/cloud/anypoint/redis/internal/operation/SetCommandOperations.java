@@ -2,7 +2,6 @@ package cloud.anypoint.redis.internal.operation;
 
 import cloud.anypoint.redis.api.ScanAttributes;
 import cloud.anypoint.redis.internal.connection.LettuceRedisConnection;
-import io.lettuce.core.KeyScanArgs;
 import io.lettuce.core.ScanArgs;
 import io.lettuce.core.ScanCursor;
 import org.mule.runtime.core.api.util.StringUtils;
@@ -15,12 +14,11 @@ import org.mule.runtime.extension.api.runtime.process.CompletionCallback;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import reactor.core.publisher.Flux;
-import reactor.core.publisher.Mono;
 
 import java.util.List;
 
-public class SetOperations {
-    private final Logger LOGGER = LoggerFactory.getLogger(SortedSetOperations.class);
+public class SetCommandOperations {
+    private final Logger LOGGER = LoggerFactory.getLogger(SortedSetCommandOperations.class);
 
     @DisplayName("SADD")
     public void sadd(@Connection LettuceRedisConnection connection,

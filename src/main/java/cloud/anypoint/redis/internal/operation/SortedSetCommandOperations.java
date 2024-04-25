@@ -13,8 +13,8 @@ import org.slf4j.LoggerFactory;
 
 import java.util.Map;
 
-public class SortedSetOperations {
-    private final Logger LOGGER = LoggerFactory.getLogger(SortedSetOperations.class);
+public class SortedSetCommandOperations {
+    private final Logger LOGGER = LoggerFactory.getLogger(SortedSetCommandOperations.class);
     @DisplayName("ZADD")
     public void zadd(@Connection LettuceRedisConnection connection,
                      String key,
