@@ -4,7 +4,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>cloud.anypoint</groupId>
     <artifactId>mule-lettuce-redis-connector</artifactId>
-    <version>0.0.47-SNAPSHOT</version>
+    <version>0.0.47</version>
     <packaging>mule-extension</packaging>
     <name>Mule Lettuce Redis Connector</name>
     <description>A low level connector providing mule applications the ability to use redis commands directly.</description>
@@ -64,7 +64,7 @@
         <connection>scm:git:git@github.com:anypointcloud/mule-lettuce-redis-connector.git</connection>
         <developerConnection>scm:git:git@github.com:anypointcloud/mule-lettuce-redis-connector.git</developerConnection>
         <url>https://github.com/anypointcloud/mule-lettuce-redis-connector</url>
-        <tag>0.0.34</tag>
+        <tag>mule-lettuce-redis-connector-0.0.47</tag>
     </scm>
 
     <distributionManagement>
