@@ -50,6 +50,32 @@ public class SetOperations {
                 );
     }
 
+    @DisplayName("SISMEMBER")
+    public void sismember(@Connection LettuceRedisConnection connection,
+                          String key,
+                          String member,
+                          CompletionCallback<Boolean, Void> callback) {
+        connection.commands().sismember(key, member).subscribe(
+                result -> callback.success(Result.<Boolean, Void>builder()
+                        .output(result)
+                        .build()),
+                callback::error
+        );
+    }
+
+    @DisplayName("SMISMEMBER")
+    public void smismember(@Connection LettuceRedisConnection connection,
+                           String key,
+                           @Content List<String> members,
+                           CompletionCallback<List<Boolean>, Void> callback) {
+        connection.commands().smismember(key, members.stream().toArray(String[]::new))
+                .collectList()
+                .subscribe(result -> callback.success(Result.<List<Boolean>, Void>builder()
+                        .output(result)
+                        .build()),
+                callback::error);
+    }
+
     @DisplayName("SRANDMEMBER")
     public void srandmember(@Connection LettuceRedisConnection connection,
                             String key,
