@@ -21,6 +21,7 @@ import org.slf4j.LoggerFactory;
 import reactor.core.publisher.Mono;
 
 import java.util.List;
+import java.util.Map;
 
 public class KeyValueCommandOperations {
     private final Logger LOGGER = LoggerFactory.getLogger(KeyValueCommandOperations.class);
@@ -72,6 +73,15 @@ public class KeyValueCommandOperations {
                 callback::error);
     }
 
+    @DisplayName("MSET")
+    public void mset(@Connection LettuceRedisConnection connection,
+                     @Content Map<String, String> keyValues,
+                     CompletionCallback<Void, Void> callback) {
+        connection.commands().mset(keyValues)
+                .subscribe(result -> callback.success(Result.<Void, Void>builder().build()),
+                        callback::error);
+    }
+
     @DisplayName("GET")
     @MediaType(value = MediaType.TEXT_PLAIN, strict = false)
     @Throws(NilErrorTypeProvider.class)
@@ -108,6 +118,7 @@ public class KeyValueCommandOperations {
                         callback::error
                 );
     }
+
 
     @DisplayName("DEL")
     public void del(@Connection LettuceRedisConnection connection,
