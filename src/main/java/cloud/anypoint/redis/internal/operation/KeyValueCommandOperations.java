@@ -82,6 +82,18 @@ public class KeyValueCommandOperations {
                         callback::error);
     }
 
+    @DisplayName("APPEND")
+    public void append(@Connection LettuceRedisConnection connection,
+                       String key,
+                       @Content String value,
+                       CompletionCallback<Long, Void> callback) {
+        connection.commands().append(key, value)
+                .subscribe(result -> callback.success(Result.<Long, Void>builder()
+                        .output(result)
+                        .build()),
+                    callback::error);
+    }
+
     @DisplayName("GET")
     @MediaType(value = MediaType.TEXT_PLAIN, strict = false)
     @Throws(NilErrorTypeProvider.class)
