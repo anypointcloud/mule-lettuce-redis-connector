@@ -1,8 +1,8 @@
 package cloud.anypoint.redis.internal.operation;
 
-import cloud.anypoint.redis.internal.NilValueException;
+import cloud.anypoint.redis.internal.exception.NilValueException;
 import cloud.anypoint.redis.api.CommandReturnType;
-import cloud.anypoint.redis.internal.WrongTypeException;
+import cloud.anypoint.redis.internal.exception.WrongTypeException;
 import cloud.anypoint.redis.internal.connection.LettuceRedisConnection;
 import cloud.anypoint.redis.internal.metadata.DynamicCommandOutputTypeResolver;
 import cloud.anypoint.redis.internal.metadata.NilErrorTypeProvider;

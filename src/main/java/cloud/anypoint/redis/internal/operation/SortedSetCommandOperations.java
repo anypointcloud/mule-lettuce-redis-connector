@@ -1,10 +1,9 @@
 package cloud.anypoint.redis.internal.operation;
 
 import static cloud.anypoint.redis.internal.util.ErrorDecorator.mapWrongTypeError;
-import cloud.anypoint.redis.internal.WrongTypeException;
+
 import cloud.anypoint.redis.internal.connection.LettuceRedisConnection;
 import cloud.anypoint.redis.internal.metadata.WrongTypeErrorTypeProvider;
-import io.lettuce.core.RedisCommandExecutionException;
 import io.lettuce.core.ScoredValue;
 import io.lettuce.core.ZAddArgs;
 import org.mule.runtime.extension.api.annotation.error.Throws;

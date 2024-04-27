@@ -1,4 +1,4 @@
-package cloud.anypoint.redis.internal;
+package cloud.anypoint.redis.internal.exception;
 
 import cloud.anypoint.redis.api.ConnectorError;
 import org.mule.runtime.extension.api.exception.ModuleException;

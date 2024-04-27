@@ -1,6 +1,7 @@
 package cloud.anypoint.redis.internal.util;
 
-import cloud.anypoint.redis.internal.WrongTypeException;
+import cloud.anypoint.redis.internal.exception.ArgumentException;
+import cloud.anypoint.redis.internal.exception.WrongTypeException;
 import io.lettuce.core.RedisCommandExecutionException;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;

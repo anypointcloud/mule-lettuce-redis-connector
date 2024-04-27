@@ -2,8 +2,10 @@ package cloud.anypoint.redis.internal.operation;
 
 import static cloud.anypoint.redis.internal.util.ErrorDecorator.mapWrongTypeError;
 import cloud.anypoint.redis.api.ScanAttributes;
-import cloud.anypoint.redis.internal.NilValueException;
+import cloud.anypoint.redis.internal.exception.ArgumentException;
+import cloud.anypoint.redis.internal.exception.NilValueException;
 import cloud.anypoint.redis.internal.connection.LettuceRedisConnection;
+import cloud.anypoint.redis.internal.metadata.ArgumentErrorTypeProvider;
 import cloud.anypoint.redis.internal.metadata.NilErrorTypeProvider;
 import cloud.anypoint.redis.internal.metadata.WrongTypeErrorTypeProvider;
 import io.lettuce.core.KeyScanArgs;
@@ -159,19 +161,24 @@ public class KeyValueCommandOperations {
     }
 
     @DisplayName("MGET")
+    @Throws(ArgumentErrorTypeProvider.class)
     public void mget(@Connection LettuceRedisConnection connection,
                      List<String> keys,
                      CompletionCallback<List<String>, Void> callback) {
         LOGGER.debug("MGET {}", keys);
-        connection.commands().mget(keys.stream().toArray(String[]::new))
-                .map(kv -> kv.getValueOrElse(null))
-                .collectList()
-                .subscribe(
-                        result -> callback.success(Result.<List<String>, Void>builder()
-                                .output(result)
-                                .build()),
-                        callback::error
-                );
+        try {
+            connection.commands().mget(keys.stream().toArray(String[]::new))
+                    .map(kv -> kv.getValueOrElse(null))
+                    .collectList()
+                    .subscribe(
+                            result -> callback.success(Result.<List<String>, Void>builder()
+                                    .output(result)
+                                    .build()),
+                            callback::error
+                    );
+        } catch (IllegalArgumentException e) {
+            callback.error(new ArgumentException("MGET", e));
+        }
     }
 
     @DisplayName("GETSET")
