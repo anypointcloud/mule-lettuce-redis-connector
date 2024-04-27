@@ -205,6 +205,34 @@ public class KeyValueCommandOperations {
                 );
     }
 
+    @DisplayName("TTL")
+    public void ttl(@Connection LettuceRedisConnection connection,
+                    String key,
+                    CompletionCallback<Long, Void> callback) {
+        LOGGER.debug("TTL {}", key);
+        connection.commands().ttl(key)
+                .subscribe(
+                        result -> callback.success(Result.<Long, Void>builder()
+                                .output(result)
+                                .build()),
+                        callback::error
+                );
+    }
+
+    @DisplayName("PTTL")
+    public void pttl(@Connection LettuceRedisConnection connection,
+                    String key,
+                    CompletionCallback<Long, Void> callback) {
+        LOGGER.debug("PTTL {}", key);
+        connection.commands().pttl(key)
+                .subscribe(
+                        result -> callback.success(Result.<Long, Void>builder()
+                                .output(result)
+                                .build()),
+                        callback::error
+                );
+    }
+
     @DisplayName("SCAN")
     public void scan(@Connection LettuceRedisConnection connection,
                      Integer cursor,
