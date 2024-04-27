@@ -80,6 +80,7 @@ public class KeyValueCommandOperations {
     public void mset(@Connection LettuceRedisConnection connection,
                      @Content Map<String, String> keyValues,
                      CompletionCallback<Void, Void> callback) {
+        LOGGER.debug("MSET {}", keyValues.keySet());
         connection.commands().mset(keyValues)
                 .subscribe(result -> callback.success(Result.<Void, Void>builder().build()),
                         callback::error);
@@ -91,6 +92,7 @@ public class KeyValueCommandOperations {
                        String key,
                        @Content String value,
                        CompletionCallback<Long, Void> callback) {
+        LOGGER.debug("APPEND {}", key);
         connection.commands().append(key, value)
                 .subscribe(result -> callback.success(Result.<Long, Void>builder()
                         .output(result)
@@ -121,16 +123,14 @@ public class KeyValueCommandOperations {
                                 .output(result)
                                 .build());
                     },
-                    error -> {
-                        LOGGER.warn("GET error {}", error.getMessage());
-                        callback.error(error);
-                    });
+                    callback::error);
     }
 
     @DisplayName("MGET")
     public void mget(@Connection LettuceRedisConnection connection,
                      List<String> keys,
                      CompletionCallback<List<String>, Void> callback) {
+        LOGGER.debug("MGET {}", keys);
         connection.commands().mget(keys.stream().toArray(String[]::new))
                 .map(kv -> kv.getValueOrElse(null))
                 .collectList()
@@ -149,6 +149,7 @@ public class KeyValueCommandOperations {
                        String key,
                        @Content String value,
                        CompletionCallback<String, Void> callback) {
+        LOGGER.debug("GETSET {}", key);
         connection.commands().getset(key, value)
                 .onErrorMap(RedisCommandExecutionException.class, t -> {
                     if (t.getMessage().startsWith("WRONGTYPE")) {
@@ -168,6 +169,7 @@ public class KeyValueCommandOperations {
     public void del(@Connection LettuceRedisConnection connection,
                     List<String> keys,
                     CompletionCallback<Long, Void> callback) {
+        LOGGER.debug("DEL {}", keys);
         connection.commands().del(keys.stream().toArray(String[]::new))
                 .subscribe(
                         result -> callback.success(Result.<Long, Void>builder()
@@ -194,6 +196,7 @@ public class KeyValueCommandOperations {
         if (!StringUtils.isEmpty(type)) {
             args.type(type);
         }
+        LOGGER.debug("SCAN {}", cursor);
         connection.commands().scan(ScanCursor.of(cursor.toString()), args)
                 .subscribe(
                     result -> callback.success(

@@ -31,6 +31,7 @@ public class SortedSetCommandOperations {
                      @DisplayName("LT") boolean lt,
                      @DisplayName("CH") boolean ch,
                      CompletionCallback<Long, Void> callback) {
+        LOGGER.debug("ZADD {}", key);
         ScoredValue<String>[] scoredValues = memberScores.entrySet().stream()
                 .map((entry) -> ScoredValue.just(entry.getValue(), entry.getKey()))
                 .toArray(ScoredValue[]::new);

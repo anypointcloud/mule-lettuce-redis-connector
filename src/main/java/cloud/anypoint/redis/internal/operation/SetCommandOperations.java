@@ -30,6 +30,7 @@ public class SetCommandOperations {
                      String key,
                      @Content List<String> members,
                      CompletionCallback<Long, Void> callback) {
+        LOGGER.debug("SADD {} {}", key, members);
         connection.commands().sadd(key, members.stream().toArray(String[]::new))
                 .onErrorMap(RedisCommandExecutionException.class, t -> {
                     if (t.getMessage().startsWith("WRONGTYPE")) {
@@ -51,6 +52,7 @@ public class SetCommandOperations {
                      String key,
                      @Content List<String> members,
                      CompletionCallback<Long, Void> callback) {
+        LOGGER.debug("SREM {} {}", key, members);
         connection.commands().srem(key, members.stream().toArray(String[]::new))
                 .onErrorMap(RedisCommandExecutionException.class, t -> {
                     if (t.getMessage().startsWith("WRONGTYPE")) {
@@ -72,6 +74,7 @@ public class SetCommandOperations {
                           String key,
                           String member,
                           CompletionCallback<Boolean, Void> callback) {
+        LOGGER.debug("SISMEMBER {} {}", key, member);
         connection.commands().sismember(key, member)
                 .onErrorMap(RedisCommandExecutionException.class, t -> {
                     if (t.getMessage().startsWith("WRONGTYPE")) {
@@ -93,6 +96,7 @@ public class SetCommandOperations {
                            String key,
                            @Content List<String> members,
                            CompletionCallback<List<Boolean>, Void> callback) {
+        LOGGER.debug("SMISMEMBER {} {}", key, members);
         connection.commands().smismember(key, members.stream().toArray(String[]::new))
                 .onErrorMap(RedisCommandExecutionException.class, t -> {
                     if (t.getMessage().startsWith("WRONGTYPE")) {
@@ -113,6 +117,7 @@ public class SetCommandOperations {
                             String key,
                             @Optional Integer count,
                             CompletionCallback<List<String>, Void> callback) {
+        LOGGER.debug("SRANDMEMBER {}", key);
         Flux<String> cmd = Flux.from(connection.commands().srandmember(key));
         if (null != count) {
             cmd = connection.commands().srandmember(key, count);
@@ -148,6 +153,7 @@ public class SetCommandOperations {
         if (null != count) {
             args.limit(count);
         }
+        LOGGER.debug("SSCAN {} {}", key, cursor);
         connection.commands().sscan(key, ScanCursor.of(cursor.toString()), args)
                 .onErrorMap(RedisCommandExecutionException.class, t -> {
                     if (t.getMessage().startsWith("WRONGTYPE")) {
