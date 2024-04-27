@@ -1,5 +1,6 @@
 package cloud.anypoint.redis.internal.operation;
 
+import static cloud.anypoint.redis.internal.util.ErrorDecorator.mapWrongTypeError;
 import cloud.anypoint.redis.internal.WrongTypeException;
 import cloud.anypoint.redis.internal.connection.LettuceRedisConnection;
 import cloud.anypoint.redis.internal.metadata.WrongTypeErrorTypeProvider;
@@ -14,6 +15,7 @@ import org.mule.runtime.extension.api.runtime.operation.Result;
 import org.mule.runtime.extension.api.runtime.process.CompletionCallback;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import reactor.core.publisher.Mono;
 
 import java.util.Map;
 
@@ -51,13 +53,8 @@ public class SortedSetCommandOperations {
         if (ch) {
             args = args.ch();
         }
-        connection.commands().zadd(key, args, scoredValues)
-                .onErrorMap(RedisCommandExecutionException.class, t -> {
-                    if (t.getMessage().startsWith("WRONGTYPE")) {
-                        return new WrongTypeException("ZADD", key, t);
-                    }
-                    return t;
-                })
+        Mono<Long> cmd = connection.commands().zadd(key, args, scoredValues);
+        mapWrongTypeError(cmd, "ZADD", key)
                 .subscribe(
                         result -> callback.success(
                                 Result.<Long, Void>builder()
