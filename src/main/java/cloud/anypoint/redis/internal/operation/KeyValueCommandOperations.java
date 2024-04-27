@@ -2,8 +2,10 @@ package cloud.anypoint.redis.internal.operation;
 
 import cloud.anypoint.redis.api.ScanAttributes;
 import cloud.anypoint.redis.internal.NilValueException;
+import cloud.anypoint.redis.internal.WrongTypeException;
 import cloud.anypoint.redis.internal.connection.LettuceRedisConnection;
 import cloud.anypoint.redis.internal.metadata.NilErrorTypeProvider;
+import cloud.anypoint.redis.internal.metadata.WrongTypeErrorTypeProvider;
 import io.lettuce.core.KeyScanArgs;
 import io.lettuce.core.ScanCursor;
 import io.lettuce.core.SetArgs;
@@ -102,6 +104,7 @@ public class KeyValueCommandOperations {
                     CompletionCallback<String, Void> callback) {
         LOGGER.debug("GET {}", key);
         connection.commands().get(key)
+                // TODO: Add validator parameter to make this optional
                 .switchIfEmpty(Mono.error(new NilValueException("GET", key)))
                 .subscribe(
                     result -> {
@@ -131,6 +134,22 @@ public class KeyValueCommandOperations {
                 );
     }
 
+    @DisplayName("GETSET")
+    @MediaType(value = MediaType.TEXT_PLAIN, strict = false)
+    @Throws(WrongTypeErrorTypeProvider.class)
+    public void getset(@Connection LettuceRedisConnection connection,
+                       String key,
+                       @Content String value,
+                       CompletionCallback<String, Void> callback) {
+        connection.commands().getset(key, value)
+                .onErrorMap(e -> new WrongTypeException("GETSET", key, e))
+                .subscribe(
+                        result -> callback.success(Result.<String, Void>builder()
+                                .output(result)
+                                .build()),
+                        callback::error
+                );
+    }
 
     @DisplayName("DEL")
     public void del(@Connection LettuceRedisConnection connection,
