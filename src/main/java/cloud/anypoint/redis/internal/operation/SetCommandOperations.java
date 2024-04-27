@@ -1,10 +1,14 @@
 package cloud.anypoint.redis.internal.operation;
 
 import cloud.anypoint.redis.api.ScanAttributes;
+import cloud.anypoint.redis.internal.WrongTypeException;
 import cloud.anypoint.redis.internal.connection.LettuceRedisConnection;
+import cloud.anypoint.redis.internal.metadata.WrongTypeErrorTypeProvider;
+import io.lettuce.core.RedisCommandExecutionException;
 import io.lettuce.core.ScanArgs;
 import io.lettuce.core.ScanCursor;
 import org.mule.runtime.core.api.util.StringUtils;
+import org.mule.runtime.extension.api.annotation.error.Throws;
 import org.mule.runtime.extension.api.annotation.param.Connection;
 import org.mule.runtime.extension.api.annotation.param.Content;
 import org.mule.runtime.extension.api.annotation.param.Optional;
@@ -21,11 +25,18 @@ public class SetCommandOperations {
     private final Logger LOGGER = LoggerFactory.getLogger(SortedSetCommandOperations.class);
 
     @DisplayName("SADD")
+    @Throws(WrongTypeErrorTypeProvider.class)
     public void sadd(@Connection LettuceRedisConnection connection,
                      String key,
                      @Content List<String> members,
                      CompletionCallback<Long, Void> callback) {
         connection.commands().sadd(key, members.stream().toArray(String[]::new))
+                .onErrorMap(RedisCommandExecutionException.class, t -> {
+                    if (t.getMessage().startsWith("WRONGTYPE")) {
+                        return new WrongTypeException("SADD", key, t);
+                    }
+                    return t;
+                })
                 .subscribe(
                         result -> callback.success(Result.<Long, Void>builder()
                                 .output(result)
@@ -35,11 +46,18 @@ public class SetCommandOperations {
     }
 
     @DisplayName("SREM")
+    @Throws(WrongTypeErrorTypeProvider.class)
     public void srem(@Connection LettuceRedisConnection connection,
                      String key,
                      @Content List<String> members,
                      CompletionCallback<Long, Void> callback) {
         connection.commands().srem(key, members.stream().toArray(String[]::new))
+                .onErrorMap(RedisCommandExecutionException.class, t -> {
+                    if (t.getMessage().startsWith("WRONGTYPE")) {
+                        return new WrongTypeException("SREM", key, t);
+                    }
+                    return t;
+                })
                 .subscribe(
                         result -> callback.success(Result.<Long, Void>builder()
                                 .output(result)
@@ -49,24 +67,39 @@ public class SetCommandOperations {
     }
 
     @DisplayName("SISMEMBER")
+    @Throws(WrongTypeErrorTypeProvider.class)
     public void sismember(@Connection LettuceRedisConnection connection,
                           String key,
                           String member,
                           CompletionCallback<Boolean, Void> callback) {
-        connection.commands().sismember(key, member).subscribe(
-                result -> callback.success(Result.<Boolean, Void>builder()
+        connection.commands().sismember(key, member)
+                .onErrorMap(RedisCommandExecutionException.class, t -> {
+                    if (t.getMessage().startsWith("WRONGTYPE")) {
+                        return new WrongTypeException("SISMEMBER", key, t);
+                    }
+                    return t;
+                })
+                .subscribe(
+                    result -> callback.success(Result.<Boolean, Void>builder()
                         .output(result)
                         .build()),
-                callback::error
+                    callback::error
         );
     }
 
     @DisplayName("SMISMEMBER")
+    @Throws(WrongTypeErrorTypeProvider.class)
     public void smismember(@Connection LettuceRedisConnection connection,
                            String key,
                            @Content List<String> members,
                            CompletionCallback<List<Boolean>, Void> callback) {
         connection.commands().smismember(key, members.stream().toArray(String[]::new))
+                .onErrorMap(RedisCommandExecutionException.class, t -> {
+                    if (t.getMessage().startsWith("WRONGTYPE")) {
+                        return new WrongTypeException("SMISMEMBER", key, t);
+                    }
+                    return t;
+                })
                 .collectList()
                 .subscribe(result -> callback.success(Result.<List<Boolean>, Void>builder()
                         .output(result)
@@ -75,6 +108,7 @@ public class SetCommandOperations {
     }
 
     @DisplayName("SRANDMEMBER")
+    @Throws(WrongTypeErrorTypeProvider.class)
     public void srandmember(@Connection LettuceRedisConnection connection,
                             String key,
                             @Optional Integer count,
@@ -83,15 +117,24 @@ public class SetCommandOperations {
         if (null != count) {
             cmd = connection.commands().srandmember(key, count);
         }
-        cmd.collectList().subscribe(
-                result -> callback.success(Result.<List<String>, Void>builder()
+        cmd
+                .onErrorMap(RedisCommandExecutionException.class, t -> {
+                    if (t.getMessage().startsWith("WRONGTYPE")) {
+                        return new WrongTypeException("SRANDMEMBER", key, t);
+                    }
+                    return t;
+                })
+                .collectList()
+                .subscribe(
+                    result -> callback.success(Result.<List<String>, Void>builder()
                         .output(result)
                         .build()),
-                callback::error
+                 callback::error
         );
     }
 
     @DisplayName("SSCAN")
+    @Throws(WrongTypeErrorTypeProvider.class)
     public void sscan(@Connection LettuceRedisConnection connection,
                       String key,
                       Integer cursor,
@@ -106,6 +149,12 @@ public class SetCommandOperations {
             args.limit(count);
         }
         connection.commands().sscan(key, ScanCursor.of(cursor.toString()), args)
+                .onErrorMap(RedisCommandExecutionException.class, t -> {
+                    if (t.getMessage().startsWith("WRONGTYPE")) {
+                        return new WrongTypeException("SSCAN", key, t);
+                    }
+                    return t;
+                })
                 .subscribe(
                         result -> callback.success(
                                 Result.<List<String>, ScanAttributes>builder()

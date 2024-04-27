@@ -1,8 +1,12 @@
 package cloud.anypoint.redis.internal.operation;
 
+import cloud.anypoint.redis.internal.WrongTypeException;
 import cloud.anypoint.redis.internal.connection.LettuceRedisConnection;
+import cloud.anypoint.redis.internal.metadata.WrongTypeErrorTypeProvider;
+import io.lettuce.core.RedisCommandExecutionException;
 import io.lettuce.core.ScoredValue;
 import io.lettuce.core.ZAddArgs;
+import org.mule.runtime.extension.api.annotation.error.Throws;
 import org.mule.runtime.extension.api.annotation.param.Connection;
 import org.mule.runtime.extension.api.annotation.param.Content;
 import org.mule.runtime.extension.api.annotation.param.display.DisplayName;
@@ -15,7 +19,9 @@ import java.util.Map;
 
 public class SortedSetCommandOperations {
     private final Logger LOGGER = LoggerFactory.getLogger(SortedSetCommandOperations.class);
+
     @DisplayName("ZADD")
+    @Throws(WrongTypeErrorTypeProvider.class)
     public void zadd(@Connection LettuceRedisConnection connection,
                      String key,
                      @Content Map<String, Double> memberScores,
@@ -45,6 +51,12 @@ public class SortedSetCommandOperations {
             args = args.ch();
         }
         connection.commands().zadd(key, args, scoredValues)
+                .onErrorMap(RedisCommandExecutionException.class, t -> {
+                    if (t.getMessage().startsWith("WRONGTYPE")) {
+                        return new WrongTypeException("ZADD", key, t);
+                    }
+                    return t;
+                })
                 .subscribe(
                         result -> callback.success(
                                 Result.<Long, Void>builder()
