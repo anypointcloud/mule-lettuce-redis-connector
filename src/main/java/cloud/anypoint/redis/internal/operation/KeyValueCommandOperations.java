@@ -1,13 +1,12 @@
 package cloud.anypoint.redis.internal.operation;
 
+import static cloud.anypoint.redis.internal.util.ErrorDecorator.mapWrongTypeError;
 import cloud.anypoint.redis.api.ScanAttributes;
 import cloud.anypoint.redis.internal.NilValueException;
-import cloud.anypoint.redis.internal.WrongTypeException;
 import cloud.anypoint.redis.internal.connection.LettuceRedisConnection;
 import cloud.anypoint.redis.internal.metadata.NilErrorTypeProvider;
 import cloud.anypoint.redis.internal.metadata.WrongTypeErrorTypeProvider;
 import io.lettuce.core.KeyScanArgs;
-import io.lettuce.core.RedisCommandExecutionException;
 import io.lettuce.core.ScanCursor;
 import io.lettuce.core.SetArgs;
 import org.mule.runtime.core.api.util.StringUtils;
@@ -107,13 +106,7 @@ public class KeyValueCommandOperations {
                     String key,
                     CompletionCallback<String, Void> callback) {
         LOGGER.debug("GET {}", key);
-        connection.commands().get(key)
-                .onErrorMap(RedisCommandExecutionException.class, t -> {
-                    if (t.getMessage().startsWith("WRONGTYPE")) {
-                        return new WrongTypeException("GET", key, t);
-                    }
-                    return t;
-                })
+        mapWrongTypeError(connection.commands().get(key), "GET", key)
                 // TODO: Add validator parameter to make this optional
                 .switchIfEmpty(Mono.error(new NilValueException("GET", key)))
                 .subscribe(
@@ -124,6 +117,25 @@ public class KeyValueCommandOperations {
                                 .build());
                     },
                     callback::error);
+    }
+
+    @DisplayName("GETDEL")
+    @MediaType(value = MediaType.TEXT_PLAIN, strict = false)
+    @Throws({NilErrorTypeProvider.class, WrongTypeErrorTypeProvider.class})
+    public void getdel(@Connection LettuceRedisConnection connection,
+                       String key,
+                       CompletionCallback<String, Void> callback) {
+        LOGGER.debug("GETDEL {}", key);
+        Mono<String> cmd = connection.commands().getdel(key);
+        mapWrongTypeError(cmd, "GETDEL", key)
+                // TODO: Add validator parameter to make this optional
+                .switchIfEmpty(Mono.error(new NilValueException("GET", key)))
+                .subscribe(
+                    result -> callback.success(Result.<String, Void>builder()
+                        .output(result)
+                        .build()),
+                    callback::error
+                );
     }
 
     @DisplayName("MGET")
@@ -150,13 +162,7 @@ public class KeyValueCommandOperations {
                        @Content String value,
                        CompletionCallback<String, Void> callback) {
         LOGGER.debug("GETSET {}", key);
-        connection.commands().getset(key, value)
-                .onErrorMap(RedisCommandExecutionException.class, t -> {
-                    if (t.getMessage().startsWith("WRONGTYPE")) {
-                        return new WrongTypeException("GETSET", key, t);
-                    }
-                    return t;
-                })
+        mapWrongTypeError(connection.commands().getset(key, value), "GETSET", key)
                 .subscribe(
                         result -> callback.success(Result.<String, Void>builder()
                                 .output(result)
