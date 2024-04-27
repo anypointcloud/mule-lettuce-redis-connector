@@ -181,6 +181,20 @@ public class KeyValueCommandOperations {
         }
     }
 
+    @DisplayName("TOUCH")
+    @Throws(ArgumentErrorTypeProvider.class)
+    public void touch(@Connection LettuceRedisConnection connection,
+                      List<String> keys,
+                      CompletionCallback<Void, Void> callback) {
+        try {
+            connection.commands().touch(keys.stream().toArray(String[]::new))
+                    .subscribe(result -> callback.success(Result.<Void, Void>builder().build()),
+                            callback::error);
+        } catch (IllegalArgumentException e) {
+            callback.error(new ArgumentException("TOUCH", e));
+        }
+    }
+
     @DisplayName("GETSET")
     @MediaType(value = MediaType.TEXT_PLAIN, strict = false)
     @Throws(WrongTypeErrorTypeProvider.class)
