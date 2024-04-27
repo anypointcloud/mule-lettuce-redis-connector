@@ -119,6 +119,26 @@ public class KeyValueCommandOperations {
                     callback::error);
     }
 
+    @DisplayName("GETRANGE")
+    @MediaType(value = MediaType.TEXT_PLAIN, strict = false)
+    @Throws({NilErrorTypeProvider.class, WrongTypeErrorTypeProvider.class})
+    public void getrange(@Connection LettuceRedisConnection connection,
+                         String key,
+                         Integer start,
+                         Integer end,
+                         CompletionCallback<String, Void> callback) {
+        LOGGER.debug("GETRANGE {} {} {}", key, start, end);
+        Mono<String> cmd = connection.commands().getrange(key, start, end);
+        mapWrongTypeError(cmd, "GETRANGE", key)
+                // TODO: Add validator parameter to make this optional
+                .switchIfEmpty(Mono.error(new NilValueException("GETRANGE", key)))
+                .subscribe(
+                    result -> callback.success(Result.<String, Void>builder()
+                        .output(result)
+                        .build()),
+                    callback::error);
+    }
+
     @DisplayName("GETDEL")
     @MediaType(value = MediaType.TEXT_PLAIN, strict = false)
     @Throws({NilErrorTypeProvider.class, WrongTypeErrorTypeProvider.class})
@@ -129,7 +149,7 @@ public class KeyValueCommandOperations {
         Mono<String> cmd = connection.commands().getdel(key);
         mapWrongTypeError(cmd, "GETDEL", key)
                 // TODO: Add validator parameter to make this optional
-                .switchIfEmpty(Mono.error(new NilValueException("GET", key)))
+                .switchIfEmpty(Mono.error(new NilValueException("GETDEL", key)))
                 .subscribe(
                     result -> callback.success(Result.<String, Void>builder()
                         .output(result)
