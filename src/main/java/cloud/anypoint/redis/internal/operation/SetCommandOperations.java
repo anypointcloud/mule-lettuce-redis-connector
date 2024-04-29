@@ -156,4 +156,18 @@ public class SetCommandOperations {
                         callback::error
                 );
     }
+
+    @DisplayName("SMEMBERS")
+    @Throws(WrongTypeErrorTypeProvider.class)
+    public void smembers(@Connection LettuceRedisConnection connection,
+                         String key,
+                         CompletionCallback<List<String>, Void> callback) {
+        Mono<List<String>> cmd = connection.commands().smembers(key).collectList();
+        mapWrongTypeError(cmd, "SMEMBERS", key)
+                .subscribe(
+                    result -> callback.success(Result.<List<String>, Void>builder()
+                        .output(result)
+                        .build()),
+                    callback::error);
+    }
 }
