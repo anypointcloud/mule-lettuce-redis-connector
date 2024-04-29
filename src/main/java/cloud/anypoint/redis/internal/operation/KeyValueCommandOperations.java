@@ -8,6 +8,7 @@ import cloud.anypoint.redis.internal.connection.LettuceRedisConnection;
 import cloud.anypoint.redis.internal.metadata.ArgumentErrorTypeProvider;
 import cloud.anypoint.redis.internal.metadata.NilErrorTypeProvider;
 import cloud.anypoint.redis.internal.metadata.WrongTypeErrorTypeProvider;
+import io.lettuce.core.ExpireArgs;
 import io.lettuce.core.KeyScanArgs;
 import io.lettuce.core.ScanCursor;
 import io.lettuce.core.SetArgs;
@@ -254,6 +255,62 @@ public class KeyValueCommandOperations {
                 );
     }
 
+    @DisplayName("EXPIRE")
+    @Throws(ArgumentErrorTypeProvider.class)
+    public void expire(@Connection LettuceRedisConnection connection,
+                       String key,
+                       Integer seconds,
+                       @Optional @DisplayName("NX") boolean nx,
+                       @Optional @DisplayName("XX") boolean xx,
+                       @Optional @DisplayName("GT") boolean gt,
+                       @Optional @DisplayName("LT") boolean lt,
+                       CompletionCallback<Boolean, Void> callback) {
+        LOGGER.debug("EXPIRE {} {}", key, seconds);
+        if (nx && xx || gt && lt) {
+            callback.error(new ArgumentException("EXPIRE", new IllegalArgumentException("NX and XX, GT or LT options at the same time are not compatible")));
+            return;
+        }
+        ExpireArgs args = new ExpireArgs();
+        if (nx) { args = args.nx(); }
+        if (xx) { args = args.xx(); }
+        if (gt) { args = args.gt(); }
+        if (lt) { args = args.lt(); }
+        connection.commands().expire(key, seconds, args)
+                .subscribe(
+                    result -> callback.success(Result.<Boolean, Void>builder()
+                        .output(result)
+                        .build()),
+                    callback::error);
+    }
+
+    @DisplayName("PEXPIRE")
+    @Throws(ArgumentErrorTypeProvider.class)
+    public void pexpire(@Connection LettuceRedisConnection connection,
+                       String key,
+                       Integer milliseconds,
+                       @Optional @DisplayName("NX") boolean nx,
+                       @Optional @DisplayName("XX") boolean xx,
+                       @Optional @DisplayName("GT") boolean gt,
+                       @Optional @DisplayName("LT") boolean lt,
+                       CompletionCallback<Boolean, Void> callback) {
+        LOGGER.debug("PEXPIRE {} {}", key, milliseconds);
+        if (nx && xx || gt && lt) {
+            callback.error(new ArgumentException("PEXPIRE", new IllegalArgumentException("NX and XX, GT or LT options at the same time are not compatible")));
+            return;
+        }
+        ExpireArgs args = new ExpireArgs();
+        if (nx) { args = args.nx(); }
+        if (xx) { args = args.xx(); }
+        if (gt) { args = args.gt(); }
+        if (lt) { args = args.lt(); }
+        connection.commands().pexpire(key, milliseconds, args)
+                .subscribe(
+                        result -> callback.success(Result.<Boolean, Void>builder()
+                                .output(result)
+                                .build()),
+                        callback::error);
+    }
+
     @DisplayName("SCAN")
     public void scan(@Connection LettuceRedisConnection connection,
                      Integer cursor,
@@ -278,7 +335,7 @@ public class KeyValueCommandOperations {
                         Result.<List<String>, ScanAttributes>builder()
                             .output(result.getKeys())
                             .attributes(new ScanAttributes() {{
-                                LOGGER.debug("cursor {}", result.getCursor());
+                                LOGGER.trace("cursor {}", result.getCursor());
                                 setCursor(Integer.parseInt(result.getCursor()));
                             }})
                             .build()),
