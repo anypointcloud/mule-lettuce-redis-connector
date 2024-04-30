@@ -17,7 +17,7 @@ import org.slf4j.LoggerFactory;
 public class SearchOperations {
     private final Logger LOGGER = LoggerFactory.getLogger(SearchOperations.class);
 
-    @Summary("Uses the <a href=\"https://redis.io/docs/latest/commands/scan/\">SCAN</a> command repeatedly to retrieve all keys that match the arguments, streaming the results and automatically handling the cursor returned from redis.")
+    @Summary("Uses the SCAN command repeatedly to retrieve all keys that match the arguments, streaming the results and automatically handling the cursor returned from redis.")
     @MediaType(value = "application/java", strict = true)
     public PagingProvider<LettuceRedisConnection, String> searchKeys(
                             @Optional String match,
@@ -39,7 +39,7 @@ public class SearchOperations {
                 connection.commands().scan(KeyScanCursor.of(cursor), args));
     }
 
-    @Summary("Uses the <a href=\"https://redis.io/docs/latest/commands/sscan/\">SSCAN</a> command repeatedly to retrieve all set members that match the arguments, streaming the results and automatically handling the cursor returned from redis.")
+    @Summary("Uses the SSCAN command repeatedly to retrieve all set members that match the arguments, streaming the results and automatically handling the cursor returned from redis.")
     @MediaType(value = "application/java", strict = true)
     public PagingProvider<LettuceRedisConnection, String> searchSetMembers(
             String key,
