@@ -1,5 +1,6 @@
 package cloud.anypoint.redis.internal.operation;
 
+import static cloud.anypoint.redis.internal.util.ErrorDecorator.mapWrongTypeError;
 import cloud.anypoint.redis.internal.exception.NilValueException;
 import cloud.anypoint.redis.api.CommandReturnType;
 import cloud.anypoint.redis.internal.exception.WrongTypeException;
@@ -25,6 +26,7 @@ public class DynamicOperations {
     private final Logger LOGGER = LoggerFactory.getLogger(DynamicOperations.class);
 
     @OutputResolver(output = DynamicCommandOutputTypeResolver.class)
+    @MediaType(value = "application/java", strict = false)
     @Throws({NilErrorTypeProvider.class, WrongTypeErrorTypeProvider.class})
     public void sendCommand(@Connection LettuceRedisConnection connection,
                             String command,
@@ -32,13 +34,7 @@ public class DynamicOperations {
                             @MetadataKeyId CommandReturnType returnType,
                             CompletionCallback<Object, Void> callback) {
         LOGGER.debug("dynamic command {} with args {}", command, arguments);
-        connection.customCommands().dynamic(command, arguments, returnType)
-                .onErrorMap(RedisCommandExecutionException.class, t -> {
-                    if (t.getMessage().startsWith("WRONGTYPE")) {
-                        return new WrongTypeException(command, arguments.get(0), t);
-                    }
-                    return t;
-                })
+        mapWrongTypeError(connection.customCommands().dynamic(command, arguments, returnType), command, String.join(" ", arguments))
                 // TODO: add validator parameter to control whether we throw NilValueException
                 .switchIfEmpty(Mono.error(new NilValueException(command)))
                 .subscribe(
