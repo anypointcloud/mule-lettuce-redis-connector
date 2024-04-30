@@ -5,12 +5,10 @@ import cloud.anypoint.redis.internal.connection.LettuceRedisConnection;
 import cloud.anypoint.redis.internal.metadata.ScanOutputTypeResolver;
 import io.lettuce.core.KeyScanArgs;
 import io.lettuce.core.KeyScanCursor;
-import io.lettuce.core.ScanCursor;
 import org.mule.runtime.core.api.util.StringUtils;
-import org.mule.runtime.extension.api.annotation.Ignore;
 import org.mule.runtime.extension.api.annotation.metadata.OutputResolver;
 import org.mule.runtime.extension.api.annotation.param.Optional;
-import org.mule.sdk.api.runtime.streaming.PagingProvider;
+import org.mule.runtime.extension.api.runtime.streaming.PagingProvider;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -23,6 +21,7 @@ public class SearchOperations {
                             @Optional String match,
                             @Optional String type,
                             @Optional Integer pageSizeHint) {
+        LOGGER.debug("Search keys with SCAN");
         KeyScanArgs args = new KeyScanArgs();
         if (!StringUtils.isEmpty(match)) {
             args.match(match);
@@ -34,7 +33,7 @@ public class SearchOperations {
             args.type(type);
         }
 
-        return new LettucePagingProvider<>((connection, cursor) ->
+        return new LettucePagingProvider<String>((connection, cursor) ->
                 connection.commands().scan(KeyScanCursor.of(cursor), args));
     }
 
