@@ -4,8 +4,8 @@ import static cloud.anypoint.redis.internal.util.ErrorDecorator.mapWrongTypeErro
 import cloud.anypoint.redis.internal.connection.LettuceRedisConnection;
 import cloud.anypoint.redis.internal.exception.ArgumentException;
 import cloud.anypoint.redis.internal.metadata.ArgumentErrorTypeProvider;
+import cloud.anypoint.redis.internal.metadata.OptionalCountOutputTypeResolver;
 import cloud.anypoint.redis.internal.metadata.WrongTypeErrorTypeProvider;
-import com.google.common.base.Functions;
 import org.mule.runtime.extension.api.annotation.error.Throws;
 import org.mule.runtime.extension.api.annotation.metadata.MetadataKeyId;
 import org.mule.runtime.extension.api.annotation.metadata.OutputResolver;
@@ -19,6 +19,7 @@ import reactor.core.publisher.Mono;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.function.Function;
 
 public class ListCommandOperations {
     private final Logger LOGGER = LoggerFactory.getLogger(ListCommandOperations.class);
@@ -43,18 +44,20 @@ public class ListCommandOperations {
     }
 
     @DisplayName("LPOP")
+    @MediaType(value = "application/java", strict = true)
+    @OutputResolver(output = OptionalCountOutputTypeResolver.class)
     @Throws(WrongTypeErrorTypeProvider.class)
     public void lpop(@Connection LettuceRedisConnection connection,
                      String key,
                      @MetadataKeyId @Optional Integer count,
-                     CompletionCallback<List<String>, Void> callback) {
-        Mono<List<String>> cmd = connection.commands().lpop(key).map(val -> Arrays.asList(val));
+                     CompletionCallback<Object, Void> callback) {
+        Mono<Object> cmd = connection.commands().lpop(key).map(val -> Arrays.asList(val));
         if (null != count) {
 //            if (count < 0)
-            cmd = connection.commands().lpop(key, count).collectList().map(Functions.identity());
+            cmd = connection.commands().lpop(key, count).collectList().map(Function.identity());
         }
         mapWrongTypeError(cmd, "LPOP", key).subscribe(
-            result -> callback.success(Result.<List<String>, Void>builder()
+            result -> callback.success(Result.<Object, Void>builder()
                     .output(result)
                     .build()),
             callback::error);

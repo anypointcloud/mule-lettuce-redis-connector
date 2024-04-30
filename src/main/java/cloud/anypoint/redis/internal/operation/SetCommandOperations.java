@@ -4,6 +4,7 @@ import static cloud.anypoint.redis.internal.util.ErrorDecorator.mapWrongTypeErro
 import cloud.anypoint.redis.api.ScanAttributes;
 import cloud.anypoint.redis.internal.exception.WrongTypeException;
 import cloud.anypoint.redis.internal.connection.LettuceRedisConnection;
+import cloud.anypoint.redis.internal.metadata.OptionalCountOutputTypeResolver;
 import cloud.anypoint.redis.internal.metadata.WrongTypeErrorTypeProvider;
 import io.lettuce.core.RedisCommandExecutionException;
 import io.lettuce.core.ScanArgs;
@@ -11,8 +12,11 @@ import io.lettuce.core.ScanCursor;
 import io.lettuce.core.ValueScanCursor;
 import org.mule.runtime.core.api.util.StringUtils;
 import org.mule.runtime.extension.api.annotation.error.Throws;
+import org.mule.runtime.extension.api.annotation.metadata.MetadataKeyId;
+import org.mule.runtime.extension.api.annotation.metadata.OutputResolver;
 import org.mule.runtime.extension.api.annotation.param.Connection;
 import org.mule.runtime.extension.api.annotation.param.Content;
+import org.mule.runtime.extension.api.annotation.param.MediaType;
 import org.mule.runtime.extension.api.annotation.param.Optional;
 import org.mule.runtime.extension.api.annotation.param.display.DisplayName;
 import org.mule.runtime.extension.api.runtime.operation.Result;
@@ -23,6 +27,7 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 import java.util.List;
+import java.util.function.Function;
 
 public class SetCommandOperations {
     private final Logger LOGGER = LoggerFactory.getLogger(SortedSetCommandOperations.class);
@@ -118,6 +123,42 @@ public class SetCommandOperations {
                         .build()),
                  callback::error
         );
+    }
+
+    @DisplayName("SDIFF")
+    @Throws(WrongTypeErrorTypeProvider.class)
+    public void sdiff(@Connection LettuceRedisConnection connection,
+                      String key,
+                      List<String> keys,
+                      CompletionCallback<List<String>, Void> callback) {
+        keys.add(0, key);
+        Mono<List<String>> cmd = connection.commands().sdiff(keys.stream().toArray(String[]::new)).collectList();
+        mapWrongTypeError(cmd, "SDIFF", key)
+            .subscribe(
+                result -> callback.success(Result.<List<String>, Void>builder()
+                    .output(result)
+                    .build()),
+                callback::error);
+    }
+
+    @DisplayName("SPOP")
+    @MediaType(value = "application/java", strict = true)
+    @OutputResolver(output = OptionalCountOutputTypeResolver.class)
+    @Throws(WrongTypeErrorTypeProvider.class)
+    public void spop(@Connection LettuceRedisConnection connection,
+                     String key,
+                     @MetadataKeyId @Optional Integer count,
+                     CompletionCallback<Object, Void> callback) {
+        Mono<Object> cmd = connection.commands().spop(key).map(Function.identity());
+        if (null != count) {
+            cmd = connection.commands().spop(key, count).collectList().map(Function.identity());
+        }
+        mapWrongTypeError(cmd, "SPOP", key)
+            .subscribe(
+                result -> callback.success(Result.<Object, Void>builder()
+                    .output(result)
+                    .build()),
+                callback::error);
     }
 
     @DisplayName("SSCAN")
