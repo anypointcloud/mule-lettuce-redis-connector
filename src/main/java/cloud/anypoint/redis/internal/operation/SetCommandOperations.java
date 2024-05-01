@@ -125,6 +125,19 @@ public class SetCommandOperations {
         );
     }
 
+    @DisplayName("SCARD")
+    @Throws(WrongTypeErrorTypeProvider.class)
+    public void scard(@Connection LettuceRedisConnection connection,
+                      String key,
+                      CompletionCallback<Long, Void> callback) {
+        mapWrongTypeError(connection.commands().scard(key), "SCARD", key)
+                .subscribe(result -> callback.success(
+                        Result.<Long, Void>builder()
+                                .output(result)
+                                .build()),
+                        callback::error);
+    }
+
     @DisplayName("SDIFF")
     @Throws(WrongTypeErrorTypeProvider.class)
     public void sdiff(@Connection LettuceRedisConnection connection,
