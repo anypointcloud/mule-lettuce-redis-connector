@@ -102,6 +102,32 @@ public class KeyValueCommandOperations {
                     callback::error);
     }
 
+    @DisplayName("INCR")
+    @Throws(WrongTypeErrorTypeProvider.class)
+    public void incr(@Connection LettuceRedisConnection connection,
+                     String key,
+                     CompletionCallback<Long, Void> callback) {
+        mapWrongTypeError(connection.commands().incr(key), "INCR", key)
+                .subscribe(
+                    result -> callback.success(Result.<Long, Void>builder()
+                        .output(result)
+                        .build()),
+                    callback::error);
+    }
+
+    @DisplayName("DECR")
+    @Throws(WrongTypeErrorTypeProvider.class)
+    public void decr(@Connection LettuceRedisConnection connection,
+                     String key,
+                     CompletionCallback<Long, Void> callback) {
+        mapWrongTypeError(connection.commands().decr(key), "DECR", key)
+                .subscribe(
+                    result -> callback.success(Result.<Long, Void>builder()
+                        .output(result)
+                        .build()),
+                    callback::error);
+    }
+
     @DisplayName("GET")
     @MediaType(value = MediaType.TEXT_PLAIN, strict = false)
     @Throws({NilErrorTypeProvider.class, WrongTypeErrorTypeProvider.class})
