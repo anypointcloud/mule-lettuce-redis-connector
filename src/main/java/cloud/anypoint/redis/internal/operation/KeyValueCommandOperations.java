@@ -8,10 +8,7 @@ import cloud.anypoint.redis.internal.connection.LettuceRedisConnection;
 import cloud.anypoint.redis.internal.metadata.ArgumentErrorTypeProvider;
 import cloud.anypoint.redis.internal.metadata.NilErrorTypeProvider;
 import cloud.anypoint.redis.internal.metadata.WrongTypeErrorTypeProvider;
-import io.lettuce.core.ExpireArgs;
-import io.lettuce.core.KeyScanArgs;
-import io.lettuce.core.ScanCursor;
-import io.lettuce.core.SetArgs;
+import io.lettuce.core.*;
 import org.mule.runtime.core.api.util.StringUtils;
 import org.mule.runtime.extension.api.annotation.error.Throws;
 import org.mule.runtime.extension.api.annotation.param.Connection;
@@ -88,6 +85,29 @@ public class KeyValueCommandOperations {
                         callback::error);
     }
 
+    @DisplayName("COPY")
+    public void copy(@Connection LettuceRedisConnection connection,
+                     String source,
+                     String destination,
+                     @Optional Integer destinationDb,
+                     @Optional boolean replace,
+                     CompletionCallback<Boolean, Void> callback) {
+        LOGGER.debug("COPY {} {}", source, destination);
+        Mono<Boolean> cmd = connection.commands().copy(source, destination);
+        if (null != destinationDb || replace) {
+            CopyArgs args = new CopyArgs().replace(replace);
+            if (null != destinationDb) {
+                args = args.destinationDb(destinationDb);
+            }
+            cmd = connection.commands().copy(source, destination, args);
+        }
+        cmd.subscribe(
+            result -> callback.success(Result.<Boolean, Void>builder()
+                .output(result)
+                .build()),
+            callback::error);
+    }
+
     @DisplayName("APPEND")
     @Throws(WrongTypeErrorTypeProvider.class)
     public void append(@Connection LettuceRedisConnection connection,
@@ -107,6 +127,7 @@ public class KeyValueCommandOperations {
     public void incr(@Connection LettuceRedisConnection connection,
                      String key,
                      CompletionCallback<Long, Void> callback) {
+        LOGGER.debug("INCR {}", key);
         mapWrongTypeError(connection.commands().incr(key), "INCR", key)
                 .subscribe(
                     result -> callback.success(Result.<Long, Void>builder()
@@ -120,6 +141,7 @@ public class KeyValueCommandOperations {
     public void decr(@Connection LettuceRedisConnection connection,
                      String key,
                      CompletionCallback<Long, Void> callback) {
+        LOGGER.debug("DECR {}", key);
         mapWrongTypeError(connection.commands().decr(key), "DECR", key)
                 .subscribe(
                     result -> callback.success(Result.<Long, Void>builder()
@@ -335,6 +357,18 @@ public class KeyValueCommandOperations {
                                 .output(result)
                                 .build()),
                         callback::error);
+    }
+
+    @DisplayName("PERSIST")
+    public void persist(@Connection LettuceRedisConnection connection,
+                        String key,
+                        CompletionCallback<Boolean, Void> callback) {
+        LOGGER.debug("PERSIST {}", key);
+        connection.commands().persist(key).subscribe(
+            result -> callback.success(Result.<Boolean, Void>builder()
+                .output(result)
+                .build()),
+            callback::error);
     }
 
     @DisplayName("SCAN")
