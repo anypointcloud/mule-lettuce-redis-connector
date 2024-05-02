@@ -30,7 +30,7 @@ import java.util.List;
 import java.util.function.Function;
 
 public class SetCommandOperations {
-    private final Logger LOGGER = LoggerFactory.getLogger(SortedSetCommandOperations.class);
+    private final Logger LOGGER = LoggerFactory.getLogger(SetCommandOperations.class);
 
     @DisplayName("SADD")
     @Throws(WrongTypeErrorTypeProvider.class)
