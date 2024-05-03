@@ -3,13 +3,16 @@ package cloud.anypoint.redis.internal.operation;
 import static cloud.anypoint.redis.internal.util.ErrorDecorator.mapWrongTypeError;
 import cloud.anypoint.redis.internal.connection.LettuceRedisConnection;
 import cloud.anypoint.redis.internal.exception.ArgumentException;
+import cloud.anypoint.redis.internal.exception.NilValueException;
 import cloud.anypoint.redis.internal.metadata.ArgumentErrorTypeProvider;
+import cloud.anypoint.redis.internal.metadata.NilErrorTypeProvider;
 import cloud.anypoint.redis.internal.metadata.WrongTypeErrorTypeProvider;
 import io.lettuce.core.KeyValue;
 import io.lettuce.core.Value;
 import org.mule.runtime.extension.api.annotation.error.Throws;
 import org.mule.runtime.extension.api.annotation.param.Connection;
 import org.mule.runtime.extension.api.annotation.param.Content;
+import org.mule.runtime.extension.api.annotation.param.MediaType;
 import org.mule.runtime.extension.api.annotation.param.display.DisplayName;
 import org.mule.runtime.extension.api.runtime.operation.Result;
 import org.mule.runtime.extension.api.runtime.process.CompletionCallback;
@@ -36,6 +39,24 @@ public class HashCommandOperations {
                     .output(result)
                     .build()),
                 callback::error);
+    }
+
+    @DisplayName("HGET")
+    @MediaType(value = "text/plain", strict = false)
+    @Throws({WrongTypeErrorTypeProvider.class, NilErrorTypeProvider.class})
+    public void hget(@Connection LettuceRedisConnection connection,
+                     String key,
+                     String field,
+                     CompletionCallback<String, Void> callback) {
+        mapWrongTypeError(connection.commands().hget(key, field), "HGET", key)
+                // TODO: Add validator parameter to make this optional
+                .switchIfEmpty(Mono.error(new NilValueException("HGET", key)))
+                .subscribe(
+                    result ->
+                        callback.success(Result.<String, Void>builder()
+                            .output(result)
+                            .build()),
+                    callback::error);
     }
 
     @DisplayName("HSET")
