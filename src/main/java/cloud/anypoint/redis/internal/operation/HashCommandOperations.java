@@ -48,6 +48,7 @@ public class HashCommandOperations {
                      String key,
                      String field,
                      CompletionCallback<String, Void> callback) {
+        LOGGER.debug("HGET {}", key);
         mapWrongTypeError(connection.commands().hget(key, field), "HGET", key)
                 // TODO: Add validator parameter to make this optional
                 .switchIfEmpty(Mono.error(new NilValueException("HGET", key)))
@@ -57,6 +58,20 @@ public class HashCommandOperations {
                             .output(result)
                             .build()),
                     callback::error);
+    }
+
+    @DisplayName("HLEN")
+    @Throws(WrongTypeErrorTypeProvider.class)
+    public void hlen(@Connection LettuceRedisConnection connection,
+                     String key,
+                     CompletionCallback<Long, Void> callback) {
+        LOGGER.debug("HLEN {}", key);
+        mapWrongTypeError(connection.commands().hlen(key), "HLEN", key)
+            .subscribe(
+                result -> callback.success(Result.<Long, Void>builder()
+                    .output(result)
+                    .build()),
+                callback::error);
     }
 
     @DisplayName("HSET")
