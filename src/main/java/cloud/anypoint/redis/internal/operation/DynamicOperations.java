@@ -1,14 +1,12 @@
 package cloud.anypoint.redis.internal.operation;
 
-import static cloud.anypoint.redis.internal.util.ErrorDecorator.mapWrongTypeError;
+import static cloud.anypoint.redis.internal.util.ErrorDecorator.mapErrors;
 import cloud.anypoint.redis.internal.exception.NilValueException;
 import cloud.anypoint.redis.api.CommandReturnType;
-import cloud.anypoint.redis.internal.exception.WrongTypeException;
 import cloud.anypoint.redis.internal.connection.LettuceRedisConnection;
 import cloud.anypoint.redis.internal.metadata.DynamicCommandOutputTypeResolver;
 import cloud.anypoint.redis.internal.metadata.NilErrorTypeProvider;
 import cloud.anypoint.redis.internal.metadata.WrongTypeErrorTypeProvider;
-import io.lettuce.core.RedisCommandExecutionException;
 import org.mule.runtime.extension.api.annotation.error.Throws;
 import org.mule.runtime.extension.api.annotation.metadata.MetadataKeyId;
 import org.mule.runtime.extension.api.annotation.metadata.OutputResolver;
@@ -34,7 +32,7 @@ public class DynamicOperations {
                             @MetadataKeyId CommandReturnType returnType,
                             CompletionCallback<Object, Void> callback) {
         LOGGER.debug("dynamic command {} with args {}", command, arguments);
-        mapWrongTypeError(connection.customCommands().dynamic(command, arguments, returnType), command, String.join(" ", arguments))
+        mapErrors(connection.customCommands().dynamic(command, arguments, returnType), command, String.join(" ", arguments))
                 // TODO: add validator parameter to control whether we throw NilValueException
                 .switchIfEmpty(Mono.error(new NilValueException(command)))
                 .subscribe(

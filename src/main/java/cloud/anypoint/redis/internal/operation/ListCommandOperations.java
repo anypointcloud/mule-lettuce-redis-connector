@@ -1,6 +1,6 @@
 package cloud.anypoint.redis.internal.operation;
 
-import static cloud.anypoint.redis.internal.util.ErrorDecorator.mapWrongTypeError;
+import static cloud.anypoint.redis.internal.util.ErrorDecorator.mapErrors;
 import cloud.anypoint.redis.internal.connection.LettuceRedisConnection;
 import cloud.anypoint.redis.internal.exception.ArgumentException;
 import cloud.anypoint.redis.internal.metadata.ArgumentErrorTypeProvider;
@@ -31,7 +31,7 @@ public class ListCommandOperations {
                       @Content List<String> members,
                       CompletionCallback<Long, Void> callback) {
         try {
-            mapWrongTypeError(connection.commands().lpush(key, members.stream().toArray(String[]::new)), "LPUSH", key)
+            mapErrors(connection.commands().lpush(key, members.stream().toArray(String[]::new)), "LPUSH", key)
                     .subscribe(
                         result -> callback.success(Result.<Long, Void>builder()
                             .output(result)
@@ -56,7 +56,7 @@ public class ListCommandOperations {
 //            if (count < 0)
             cmd = connection.commands().lpop(key, count).collectList().map(Function.identity());
         }
-        mapWrongTypeError(cmd, "LPOP", key).subscribe(
+        mapErrors(cmd, "LPOP", key).subscribe(
             result -> callback.success(Result.<Object, Void>builder()
                     .output(result)
                     .build()),

@@ -1,6 +1,6 @@
 package cloud.anypoint.redis.internal.operation;
 
-import static cloud.anypoint.redis.internal.util.ErrorDecorator.mapWrongTypeError;
+import static cloud.anypoint.redis.internal.util.ErrorDecorator.mapErrors;
 
 import cloud.anypoint.redis.internal.connection.LettuceRedisConnection;
 import cloud.anypoint.redis.internal.metadata.WrongTypeErrorTypeProvider;
@@ -53,7 +53,7 @@ public class SortedSetCommandOperations {
             args = args.ch();
         }
         Mono<Long> cmd = connection.commands().zadd(key, args, scoredValues);
-        mapWrongTypeError(cmd, "ZADD", key)
+        mapErrors(cmd, "ZADD", key)
                 .subscribe(
                         result -> callback.success(
                                 Result.<Long, Void>builder()

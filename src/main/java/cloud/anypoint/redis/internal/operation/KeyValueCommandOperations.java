@@ -1,6 +1,6 @@
 package cloud.anypoint.redis.internal.operation;
 
-import static cloud.anypoint.redis.internal.util.ErrorDecorator.mapWrongTypeError;
+import static cloud.anypoint.redis.internal.util.ErrorDecorator.mapErrors;
 import cloud.anypoint.redis.api.ScanAttributes;
 import cloud.anypoint.redis.internal.exception.ArgumentException;
 import cloud.anypoint.redis.internal.exception.NilValueException;
@@ -68,7 +68,7 @@ public class KeyValueCommandOperations {
         if (get) {
             cmd = connection.commands().setGet(key, value, args);
         }
-        cmd.subscribe(
+        mapErrors(cmd, "SET", key).subscribe(
                 result -> callback.success(Result.<String, Void>builder()
                         .output(result)
                         .build()),
@@ -80,7 +80,7 @@ public class KeyValueCommandOperations {
                      @Content Map<String, String> keyValues,
                      CompletionCallback<Void, Void> callback) {
         LOGGER.debug("MSET {}", keyValues.keySet());
-        connection.commands().mset(keyValues)
+        mapErrors(connection.commands().mset(keyValues), "MSET")
                 .subscribe(result -> callback.success(Result.<Void, Void>builder().build()),
                         callback::error);
     }
@@ -101,7 +101,7 @@ public class KeyValueCommandOperations {
             }
             cmd = connection.commands().copy(source, destination, args);
         }
-        cmd.subscribe(
+        mapErrors(cmd, "COPY").subscribe(
             result -> callback.success(Result.<Boolean, Void>builder()
                 .output(result)
                 .build()),
@@ -115,7 +115,7 @@ public class KeyValueCommandOperations {
                        @Content String value,
                        CompletionCallback<Long, Void> callback) {
         LOGGER.debug("APPEND {}", key);
-        connection.commands().append(key, value)
+        mapErrors(connection.commands().append(key, value), "APPEND")
                 .subscribe(result -> callback.success(Result.<Long, Void>builder()
                         .output(result)
                         .build()),
@@ -128,7 +128,7 @@ public class KeyValueCommandOperations {
                      String key,
                      CompletionCallback<Long, Void> callback) {
         LOGGER.debug("INCR {}", key);
-        mapWrongTypeError(connection.commands().incr(key), "INCR", key)
+        mapErrors(connection.commands().incr(key), "INCR", key)
                 .subscribe(
                     result -> callback.success(Result.<Long, Void>builder()
                         .output(result)
@@ -142,7 +142,7 @@ public class KeyValueCommandOperations {
                      String key,
                      CompletionCallback<Long, Void> callback) {
         LOGGER.debug("DECR {}", key);
-        mapWrongTypeError(connection.commands().decr(key), "DECR", key)
+        mapErrors(connection.commands().decr(key), "DECR", key)
                 .subscribe(
                     result -> callback.success(Result.<Long, Void>builder()
                         .output(result)
@@ -157,7 +157,7 @@ public class KeyValueCommandOperations {
                     String key,
                     CompletionCallback<String, Void> callback) {
         LOGGER.debug("GET {}", key);
-        mapWrongTypeError(connection.commands().get(key), "GET", key)
+        mapErrors(connection.commands().get(key), "GET", key)
                 // TODO: Add validator parameter to make this optional
                 .switchIfEmpty(Mono.error(new NilValueException("GET", key)))
                 .subscribe(
@@ -180,7 +180,7 @@ public class KeyValueCommandOperations {
                          CompletionCallback<String, Void> callback) {
         LOGGER.debug("GETRANGE {} {} {}", key, start, end);
         Mono<String> cmd = connection.commands().getrange(key, start, end);
-        mapWrongTypeError(cmd, "GETRANGE", key)
+        mapErrors(cmd, "GETRANGE", key)
                 // TODO: Add validator parameter to make this optional
                 .switchIfEmpty(Mono.error(new NilValueException("GETRANGE", key)))
                 .subscribe(
@@ -198,7 +198,7 @@ public class KeyValueCommandOperations {
                        CompletionCallback<String, Void> callback) {
         LOGGER.debug("GETDEL {}", key);
         Mono<String> cmd = connection.commands().getdel(key);
-        mapWrongTypeError(cmd, "GETDEL", key)
+        mapErrors(cmd, "GETDEL", key)
                 // TODO: Add validator parameter to make this optional
                 .switchIfEmpty(Mono.error(new NilValueException("GETDEL", key)))
                 .subscribe(
@@ -216,15 +216,14 @@ public class KeyValueCommandOperations {
                      CompletionCallback<List<String>, Void> callback) {
         LOGGER.debug("MGET {}", keys);
         try {
-            connection.commands().mget(keys.stream().toArray(String[]::new))
+            Mono<List<String>> cmd = connection.commands().mget(keys.stream().toArray(String[]::new))
                     .map(kv -> kv.getValueOrElse(null))
-                    .collectList()
-                    .subscribe(
-                            result -> callback.success(Result.<List<String>, Void>builder()
-                                    .output(result)
-                                    .build()),
-                            callback::error
-                    );
+                    .collectList();
+            mapErrors(cmd, "MGET").subscribe(
+                result -> callback.success(Result.<List<String>, Void>builder()
+                    .output(result)
+                    .build()),
+                callback::error);
         } catch (IllegalArgumentException e) {
             callback.error(new ArgumentException("MGET", e));
         }
@@ -236,9 +235,10 @@ public class KeyValueCommandOperations {
                       List<String> keys,
                       CompletionCallback<Void, Void> callback) {
         try {
-            connection.commands().touch(keys.stream().toArray(String[]::new))
-                    .subscribe(result -> callback.success(Result.<Void, Void>builder().build()),
-                            callback::error);
+            Mono<Long> cmd = connection.commands().touch(keys.stream().toArray(String[]::new));
+            mapErrors(cmd, "TOUCH")
+                .subscribe(result -> callback.success(Result.<Void, Void>builder().build()),
+                    callback::error);
         } catch (IllegalArgumentException e) {
             callback.error(new ArgumentException("TOUCH", e));
         }
@@ -252,7 +252,7 @@ public class KeyValueCommandOperations {
                        @Content String value,
                        CompletionCallback<String, Void> callback) {
         LOGGER.debug("GETSET {}", key);
-        mapWrongTypeError(connection.commands().getset(key, value), "GETSET", key)
+        mapErrors(connection.commands().getset(key, value), "GETSET", key)
                 .subscribe(
                         result -> callback.success(Result.<String, Void>builder()
                                 .output(result)
@@ -266,7 +266,7 @@ public class KeyValueCommandOperations {
                     List<String> keys,
                     CompletionCallback<Long, Void> callback) {
         LOGGER.debug("DEL {}", keys);
-        connection.commands().del(keys.stream().toArray(String[]::new))
+        mapErrors(connection.commands().del(keys.stream().toArray(String[]::new)), "DEL")
                 .subscribe(
                         result -> callback.success(Result.<Long, Void>builder()
                                 .output(result)
@@ -280,13 +280,12 @@ public class KeyValueCommandOperations {
                     String key,
                     CompletionCallback<Long, Void> callback) {
         LOGGER.debug("TTL {}", key);
-        connection.commands().ttl(key)
-                .subscribe(
-                        result -> callback.success(Result.<Long, Void>builder()
-                                .output(result)
-                                .build()),
-                        callback::error
-                );
+        mapErrors(connection.commands().ttl(key), "TTL", key)
+            .subscribe(
+                result -> callback.success(Result.<Long, Void>builder()
+                    .output(result)
+                    .build()),
+                callback::error);
     }
 
     @DisplayName("PTTL")
@@ -294,13 +293,12 @@ public class KeyValueCommandOperations {
                     String key,
                     CompletionCallback<Long, Void> callback) {
         LOGGER.debug("PTTL {}", key);
-        connection.commands().pttl(key)
-                .subscribe(
-                        result -> callback.success(Result.<Long, Void>builder()
-                                .output(result)
-                                .build()),
-                        callback::error
-                );
+        mapErrors(connection.commands().pttl(key), "PTTL", key)
+            .subscribe(
+                result -> callback.success(Result.<Long, Void>builder()
+                        .output(result)
+                        .build()),
+                callback::error);
     }
 
     @DisplayName("EXPIRE")
@@ -323,12 +321,12 @@ public class KeyValueCommandOperations {
         if (xx) { args = args.xx(); }
         if (gt) { args = args.gt(); }
         if (lt) { args = args.lt(); }
-        connection.commands().expire(key, seconds, args)
-                .subscribe(
-                    result -> callback.success(Result.<Boolean, Void>builder()
-                        .output(result)
-                        .build()),
-                    callback::error);
+        mapErrors(connection.commands().expire(key, seconds, args), "EXPIRE", key)
+            .subscribe(
+                result -> callback.success(Result.<Boolean, Void>builder()
+                    .output(result)
+                    .build()),
+                callback::error);
     }
 
     @DisplayName("PEXPIRE")
@@ -351,12 +349,12 @@ public class KeyValueCommandOperations {
         if (xx) { args = args.xx(); }
         if (gt) { args = args.gt(); }
         if (lt) { args = args.lt(); }
-        connection.commands().pexpire(key, milliseconds, args)
-                .subscribe(
-                        result -> callback.success(Result.<Boolean, Void>builder()
-                                .output(result)
-                                .build()),
-                        callback::error);
+        mapErrors(connection.commands().pexpire(key, milliseconds, args), "PEXPIRE", key)
+            .subscribe(
+                result -> callback.success(Result.<Boolean, Void>builder()
+                        .output(result)
+                        .build()),
+                callback::error);
     }
 
     @DisplayName("PERSIST")
@@ -364,11 +362,12 @@ public class KeyValueCommandOperations {
                         String key,
                         CompletionCallback<Boolean, Void> callback) {
         LOGGER.debug("PERSIST {}", key);
-        connection.commands().persist(key).subscribe(
-            result -> callback.success(Result.<Boolean, Void>builder()
-                .output(result)
-                .build()),
-            callback::error);
+        mapErrors(connection.commands().persist(key), "PERSIST", key)
+            .subscribe(
+                result -> callback.success(Result.<Boolean, Void>builder()
+                    .output(result)
+                    .build()),
+                callback::error);
     }
 
     @DisplayName("SCAN")
@@ -389,17 +388,17 @@ public class KeyValueCommandOperations {
             args.type(type);
         }
         LOGGER.debug("SCAN {}", cursor);
-        connection.commands().scan(ScanCursor.of(cursor.toString()), args)
-                .subscribe(
-                    result -> callback.success(
-                        Result.<List<String>, ScanAttributes>builder()
-                            .output(result.getKeys())
-                            .attributes(new ScanAttributes() {{
-                                LOGGER.trace("cursor {}", result.getCursor());
-                                setCursor(Integer.parseInt(result.getCursor()));
-                            }})
-                            .build()),
-                    callback::error
-                );
+        mapErrors(connection.commands().scan(ScanCursor.of(cursor.toString()), args), "SCAN")
+            .subscribe(
+                result -> callback.success(
+                    Result.<List<String>, ScanAttributes>builder()
+                        .output(result.getKeys())
+                        .attributes(new ScanAttributes() {{
+                            LOGGER.trace("cursor {}", result.getCursor());
+                            setCursor(Integer.parseInt(result.getCursor()));
+                        }})
+                        .build()),
+                callback::error
+            );
     }
 }

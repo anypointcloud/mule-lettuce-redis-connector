@@ -1,6 +1,6 @@
 package cloud.anypoint.redis.internal.operation;
 
-import static cloud.anypoint.redis.internal.util.ErrorDecorator.mapWrongTypeError;
+import static cloud.anypoint.redis.internal.util.ErrorDecorator.mapErrors;
 import cloud.anypoint.redis.internal.connection.LettuceRedisConnection;
 import cloud.anypoint.redis.internal.exception.ArgumentException;
 import cloud.anypoint.redis.internal.exception.NilValueException;
@@ -33,7 +33,7 @@ public class HashCommandOperations {
         LOGGER.debug("HGETALL {}", key);
         Mono<Map<String, String>> cmd = connection.commands().hgetall(key)
                 .collectMap(KeyValue::getKey, Value::getValue);
-        mapWrongTypeError(cmd, "HGETALL", key)
+        mapErrors(cmd, "HGETALL", key)
             .subscribe(
                 result -> callback.success(Result.<Map<String, String>, Void>builder()
                     .output(result)
@@ -49,7 +49,7 @@ public class HashCommandOperations {
                      String field,
                      CompletionCallback<String, Void> callback) {
         LOGGER.debug("HGET {}", key);
-        mapWrongTypeError(connection.commands().hget(key, field), "HGET", key)
+        mapErrors(connection.commands().hget(key, field), "HGET", key)
                 // TODO: Add validator parameter to make this optional
                 .switchIfEmpty(Mono.error(new NilValueException("HGET", key)))
                 .subscribe(
@@ -66,7 +66,7 @@ public class HashCommandOperations {
                      String key,
                      CompletionCallback<Long, Void> callback) {
         LOGGER.debug("HLEN {}", key);
-        mapWrongTypeError(connection.commands().hlen(key), "HLEN", key)
+        mapErrors(connection.commands().hlen(key), "HLEN", key)
             .subscribe(
                 result -> callback.success(Result.<Long, Void>builder()
                     .output(result)
@@ -84,7 +84,7 @@ public class HashCommandOperations {
         if (null == fields || fields.size() == 0) {
             callback.error(new ArgumentException("HSET", new IllegalArgumentException("fields object must not be empty")));
         } else {
-            mapWrongTypeError(connection.commands().hset(key, fields), "HSET", key)
+            mapErrors(connection.commands().hset(key, fields), "HSET", key)
                 .subscribe(
                     result -> callback.success(Result.<Long, Void>builder()
                         .output(result)

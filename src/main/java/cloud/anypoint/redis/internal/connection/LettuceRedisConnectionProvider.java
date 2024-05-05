@@ -5,6 +5,7 @@ import static org.mule.runtime.api.i18n.I18nMessageFactory.createStaticMessage;
 import io.lettuce.core.ClientOptions;
 import io.lettuce.core.RedisClient;
 import io.lettuce.core.RedisURI;
+import io.lettuce.core.TimeoutOptions;
 import org.mule.runtime.api.connection.*;
 import org.mule.runtime.api.lifecycle.Disposable;
 import org.mule.runtime.api.lifecycle.Initialisable;
@@ -12,9 +13,14 @@ import org.mule.runtime.api.lifecycle.InitialisationException;
 import org.mule.runtime.extension.api.annotation.param.Optional;
 import org.mule.runtime.extension.api.annotation.param.Parameter;
 
+import org.mule.runtime.extension.api.annotation.param.display.DisplayName;
+import org.mule.runtime.extension.api.annotation.param.display.Placement;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import reactor.core.publisher.Mono;
+
+import java.time.Duration;
+import java.util.concurrent.TimeUnit;
 
 public class LettuceRedisConnectionProvider implements CachedConnectionProvider<LettuceRedisConnection>, Initialisable, Disposable {
 
@@ -33,6 +39,18 @@ public class LettuceRedisConnectionProvider implements CachedConnectionProvider<
     private String password;
 
 
+    @Optional
+    @Parameter
+    @DisplayName("Command Timeout")
+    @Placement(tab = "Advanced", order = 1)
+    private Integer commandTimeout;
+
+    @Optional
+    @Parameter
+    @DisplayName("Command Timeout Time Unit")
+    @Placement(tab = "Advanced", order = 2)
+    private TimeUnit commandTimeoutUnit;
+
     private RedisClient redisClient;
 
     @Override
@@ -47,6 +65,13 @@ public class LettuceRedisConnectionProvider implements CachedConnectionProvider<
                     .build();
 
             this.redisClient = RedisClient.create(uri);
+            if (null != commandTimeout) {
+                this.redisClient.setOptions(ClientOptions.builder()
+                        .timeoutOptions(TimeoutOptions.builder()
+                                .fixedTimeout(Duration.ofMillis(commandTimeoutUnit.toMillis(commandTimeout)))
+                                .build())
+                        .build());
+            }
         } catch (IllegalStateException e) {
             throw new InitialisationException(createStaticMessage(e.getLocalizedMessage()), e, this);
         }

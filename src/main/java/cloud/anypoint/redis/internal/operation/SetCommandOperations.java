@@ -1,6 +1,6 @@
 package cloud.anypoint.redis.internal.operation;
 
-import static cloud.anypoint.redis.internal.util.ErrorDecorator.mapWrongTypeError;
+import static cloud.anypoint.redis.internal.util.ErrorDecorator.mapErrors;
 import cloud.anypoint.redis.api.ScanAttributes;
 import cloud.anypoint.redis.internal.exception.WrongTypeException;
 import cloud.anypoint.redis.internal.connection.LettuceRedisConnection;
@@ -40,7 +40,7 @@ public class SetCommandOperations {
                      CompletionCallback<Long, Void> callback) {
         LOGGER.debug("SADD {} {}", key, members);
         Mono<Long> cmd = connection.commands().sadd(key, members.stream().toArray(String[]::new));
-        mapWrongTypeError(cmd, "SADD", key)
+        mapErrors(cmd, "SADD", key)
                 .subscribe(
                         result -> callback.success(Result.<Long, Void>builder()
                                 .output(result)
@@ -57,7 +57,7 @@ public class SetCommandOperations {
                      CompletionCallback<Long, Void> callback) {
         LOGGER.debug("SREM {} {}", key, members);
         Mono<Long> cmd = connection.commands().srem(key, members.stream().toArray(String[]::new));
-        mapWrongTypeError(cmd, "SREM", key)
+        mapErrors(cmd, "SREM", key)
                 .subscribe(
                         result -> callback.success(Result.<Long, Void>builder()
                                 .output(result)
@@ -74,7 +74,7 @@ public class SetCommandOperations {
                           CompletionCallback<Boolean, Void> callback) {
         LOGGER.debug("SISMEMBER {} {}", key, member);
         Mono<Boolean> cmd = connection.commands().sismember(key, member);
-        mapWrongTypeError(cmd, "SISMEMBER", key)
+        mapErrors(cmd, "SISMEMBER", key)
                 .onErrorMap(RedisCommandExecutionException.class, t -> {
                     if (t.getMessage().startsWith("WRONGTYPE")) {
                         return new WrongTypeException("SISMEMBER", key, t);
@@ -98,7 +98,7 @@ public class SetCommandOperations {
         LOGGER.debug("SMISMEMBER {} {}", key, members);
         Mono<List<Boolean>> cmd = connection.commands().smismember(key, members.stream().toArray(String[]::new))
                 .collectList();
-        mapWrongTypeError(cmd, "SMISMEMBER", key)
+        mapErrors(cmd, "SMISMEMBER", key)
                 .subscribe(result -> callback.success(Result.<List<Boolean>, Void>builder()
                         .output(result)
                         .build()),
@@ -116,7 +116,7 @@ public class SetCommandOperations {
         if (null != count) {
             cmd = connection.commands().srandmember(key, count);
         }
-        mapWrongTypeError(cmd.collectList(), "SRANDMEMBER", key)
+        mapErrors(cmd.collectList(), "SRANDMEMBER", key)
                 .subscribe(
                     result -> callback.success(Result.<List<String>, Void>builder()
                         .output(result)
@@ -130,7 +130,7 @@ public class SetCommandOperations {
     public void scard(@Connection LettuceRedisConnection connection,
                       String key,
                       CompletionCallback<Long, Void> callback) {
-        mapWrongTypeError(connection.commands().scard(key), "SCARD", key)
+        mapErrors(connection.commands().scard(key), "SCARD", key)
                 .subscribe(result -> callback.success(
                         Result.<Long, Void>builder()
                                 .output(result)
@@ -146,7 +146,7 @@ public class SetCommandOperations {
                       CompletionCallback<List<String>, Void> callback) {
         keys.add(0, key);
         Mono<List<String>> cmd = connection.commands().sdiff(keys.stream().toArray(String[]::new)).collectList();
-        mapWrongTypeError(cmd, "SDIFF", key)
+        mapErrors(cmd, "SDIFF", key)
             .subscribe(
                 result -> callback.success(Result.<List<String>, Void>builder()
                     .output(result)
@@ -166,7 +166,7 @@ public class SetCommandOperations {
         if (null != count) {
             cmd = connection.commands().spop(key, count).collectList().map(Function.identity());
         }
-        mapWrongTypeError(cmd, "SPOP", key)
+        mapErrors(cmd, "SPOP", key)
             .subscribe(
                 result -> callback.success(Result.<Object, Void>builder()
                     .output(result)
@@ -191,7 +191,7 @@ public class SetCommandOperations {
         }
         LOGGER.debug("SSCAN {} {}", key, cursor);
         Mono<ValueScanCursor<String>> cmd = connection.commands().sscan(key, ScanCursor.of(cursor.toString()), args);
-        mapWrongTypeError(cmd, "SSCAN", key)
+        mapErrors(cmd, "SSCAN", key)
                 .onErrorMap(RedisCommandExecutionException.class, t -> {
                     if (t.getMessage().startsWith("WRONGTYPE")) {
                         return new WrongTypeException("SSCAN", key, t);
@@ -217,7 +217,7 @@ public class SetCommandOperations {
                          String key,
                          CompletionCallback<List<String>, Void> callback) {
         Mono<List<String>> cmd = connection.commands().smembers(key).collectList();
-        mapWrongTypeError(cmd, "SMEMBERS", key)
+        mapErrors(cmd, "SMEMBERS", key)
                 .subscribe(
                     result -> callback.success(Result.<List<String>, Void>builder()
                         .output(result)

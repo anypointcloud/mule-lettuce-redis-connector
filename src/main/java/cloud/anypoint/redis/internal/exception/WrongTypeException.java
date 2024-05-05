@@ -4,6 +4,9 @@ import cloud.anypoint.redis.api.ConnectorError;
 import org.mule.runtime.extension.api.exception.ModuleException;
 
 public class WrongTypeException extends ModuleException {
+    public WrongTypeException(String command, Throwable cause) {
+        super("Wrong type for command " + command, ConnectorError.WRONGTYPE, cause);
+    }
     public WrongTypeException(String command, String key) {
         super("Key " + key + " contains wrong type for command " + command, ConnectorError.WRONGTYPE);
     }
