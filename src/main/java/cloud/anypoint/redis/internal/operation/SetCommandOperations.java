@@ -5,6 +5,7 @@ import cloud.anypoint.redis.api.ScanAttributes;
 import cloud.anypoint.redis.internal.exception.WrongTypeException;
 import cloud.anypoint.redis.internal.connection.LettuceRedisConnection;
 import cloud.anypoint.redis.internal.metadata.OptionalCountOutputTypeResolver;
+import cloud.anypoint.redis.internal.metadata.TimeoutErrorTypeProvider;
 import cloud.anypoint.redis.internal.metadata.WrongTypeErrorTypeProvider;
 import io.lettuce.core.RedisCommandExecutionException;
 import io.lettuce.core.ScanArgs;
@@ -33,7 +34,7 @@ public class SetCommandOperations {
     private final Logger LOGGER = LoggerFactory.getLogger(SetCommandOperations.class);
 
     @DisplayName("SADD")
-    @Throws(WrongTypeErrorTypeProvider.class)
+    @Throws({TimeoutErrorTypeProvider.class, WrongTypeErrorTypeProvider.class})
     public void sadd(@Connection LettuceRedisConnection connection,
                      String key,
                      @Content List<String> members,
@@ -50,7 +51,7 @@ public class SetCommandOperations {
     }
 
     @DisplayName("SREM")
-    @Throws(WrongTypeErrorTypeProvider.class)
+    @Throws({TimeoutErrorTypeProvider.class, WrongTypeErrorTypeProvider.class})
     public void srem(@Connection LettuceRedisConnection connection,
                      String key,
                      @Content List<String> members,
@@ -67,7 +68,7 @@ public class SetCommandOperations {
     }
 
     @DisplayName("SISMEMBER")
-    @Throws(WrongTypeErrorTypeProvider.class)
+    @Throws({TimeoutErrorTypeProvider.class, WrongTypeErrorTypeProvider.class})
     public void sismember(@Connection LettuceRedisConnection connection,
                           String key,
                           String member,
@@ -90,7 +91,7 @@ public class SetCommandOperations {
     }
 
     @DisplayName("SMISMEMBER")
-    @Throws(WrongTypeErrorTypeProvider.class)
+    @Throws({TimeoutErrorTypeProvider.class, WrongTypeErrorTypeProvider.class})
     public void smismember(@Connection LettuceRedisConnection connection,
                            String key,
                            @Content List<String> members,
@@ -106,7 +107,7 @@ public class SetCommandOperations {
     }
 
     @DisplayName("SRANDMEMBER")
-    @Throws(WrongTypeErrorTypeProvider.class)
+    @Throws({TimeoutErrorTypeProvider.class, WrongTypeErrorTypeProvider.class})
     public void srandmember(@Connection LettuceRedisConnection connection,
                             String key,
                             @Optional Integer count,
@@ -126,7 +127,7 @@ public class SetCommandOperations {
     }
 
     @DisplayName("SCARD")
-    @Throws(WrongTypeErrorTypeProvider.class)
+    @Throws({TimeoutErrorTypeProvider.class, WrongTypeErrorTypeProvider.class})
     public void scard(@Connection LettuceRedisConnection connection,
                       String key,
                       CompletionCallback<Long, Void> callback) {
@@ -139,7 +140,7 @@ public class SetCommandOperations {
     }
 
     @DisplayName("SDIFF")
-    @Throws(WrongTypeErrorTypeProvider.class)
+    @Throws({TimeoutErrorTypeProvider.class, WrongTypeErrorTypeProvider.class})
     public void sdiff(@Connection LettuceRedisConnection connection,
                       String key,
                       List<String> keys,
@@ -157,7 +158,7 @@ public class SetCommandOperations {
     @DisplayName("SPOP")
     @MediaType(value = "application/java", strict = true)
     @OutputResolver(output = OptionalCountOutputTypeResolver.class)
-    @Throws(WrongTypeErrorTypeProvider.class)
+    @Throws({TimeoutErrorTypeProvider.class, WrongTypeErrorTypeProvider.class})
     public void spop(@Connection LettuceRedisConnection connection,
                      String key,
                      @MetadataKeyId @Optional Integer count,
@@ -175,7 +176,7 @@ public class SetCommandOperations {
     }
 
     @DisplayName("SSCAN")
-    @Throws(WrongTypeErrorTypeProvider.class)
+    @Throws({TimeoutErrorTypeProvider.class, WrongTypeErrorTypeProvider.class})
     public void sscan(@Connection LettuceRedisConnection connection,
                       String key,
                       Integer cursor,
@@ -212,7 +213,7 @@ public class SetCommandOperations {
     }
 
     @DisplayName("SMEMBERS")
-    @Throws(WrongTypeErrorTypeProvider.class)
+    @Throws({TimeoutErrorTypeProvider.class, WrongTypeErrorTypeProvider.class})
     public void smembers(@Connection LettuceRedisConnection connection,
                          String key,
                          CompletionCallback<List<String>, Void> callback) {

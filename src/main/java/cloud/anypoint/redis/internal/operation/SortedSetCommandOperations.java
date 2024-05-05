@@ -3,6 +3,7 @@ package cloud.anypoint.redis.internal.operation;
 import static cloud.anypoint.redis.internal.util.ErrorDecorator.mapErrors;
 
 import cloud.anypoint.redis.internal.connection.LettuceRedisConnection;
+import cloud.anypoint.redis.internal.metadata.TimeoutErrorTypeProvider;
 import cloud.anypoint.redis.internal.metadata.WrongTypeErrorTypeProvider;
 import io.lettuce.core.ScoredValue;
 import io.lettuce.core.ZAddArgs;
@@ -22,7 +23,7 @@ public class SortedSetCommandOperations {
     private final Logger LOGGER = LoggerFactory.getLogger(SortedSetCommandOperations.class);
 
     @DisplayName("ZADD")
-    @Throws(WrongTypeErrorTypeProvider.class)
+    @Throws({TimeoutErrorTypeProvider.class, WrongTypeErrorTypeProvider.class})
     public void zadd(@Connection LettuceRedisConnection connection,
                      String key,
                      @Content Map<String, Double> memberScores,

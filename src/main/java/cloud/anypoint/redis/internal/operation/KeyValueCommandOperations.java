@@ -7,6 +7,7 @@ import cloud.anypoint.redis.internal.exception.NilValueException;
 import cloud.anypoint.redis.internal.connection.LettuceRedisConnection;
 import cloud.anypoint.redis.internal.metadata.ArgumentErrorTypeProvider;
 import cloud.anypoint.redis.internal.metadata.NilErrorTypeProvider;
+import cloud.anypoint.redis.internal.metadata.TimeoutErrorTypeProvider;
 import cloud.anypoint.redis.internal.metadata.WrongTypeErrorTypeProvider;
 import io.lettuce.core.*;
 import org.mule.runtime.core.api.util.StringUtils;
@@ -29,6 +30,7 @@ public class KeyValueCommandOperations {
     private final Logger LOGGER = LoggerFactory.getLogger(KeyValueCommandOperations.class);
     @DisplayName("SET")
     @MediaType(value = MediaType.TEXT_PLAIN, strict = false)
+    @Throws(TimeoutErrorTypeProvider.class)
     public void set(@Connection LettuceRedisConnection connection,
                     String key,
                     @Content String value,
@@ -76,6 +78,7 @@ public class KeyValueCommandOperations {
     }
 
     @DisplayName("MSET")
+    @Throws(TimeoutErrorTypeProvider.class)
     public void mset(@Connection LettuceRedisConnection connection,
                      @Content Map<String, String> keyValues,
                      CompletionCallback<Void, Void> callback) {
@@ -86,6 +89,7 @@ public class KeyValueCommandOperations {
     }
 
     @DisplayName("COPY")
+    @Throws(TimeoutErrorTypeProvider.class)
     public void copy(@Connection LettuceRedisConnection connection,
                      String source,
                      String destination,
@@ -109,7 +113,7 @@ public class KeyValueCommandOperations {
     }
 
     @DisplayName("APPEND")
-    @Throws(WrongTypeErrorTypeProvider.class)
+    @Throws({WrongTypeErrorTypeProvider.class, TimeoutErrorTypeProvider.class})
     public void append(@Connection LettuceRedisConnection connection,
                        String key,
                        @Content String value,
@@ -123,7 +127,7 @@ public class KeyValueCommandOperations {
     }
 
     @DisplayName("INCR")
-    @Throws(WrongTypeErrorTypeProvider.class)
+    @Throws({WrongTypeErrorTypeProvider.class, TimeoutErrorTypeProvider.class})
     public void incr(@Connection LettuceRedisConnection connection,
                      String key,
                      CompletionCallback<Long, Void> callback) {
@@ -137,7 +141,7 @@ public class KeyValueCommandOperations {
     }
 
     @DisplayName("DECR")
-    @Throws(WrongTypeErrorTypeProvider.class)
+    @Throws({WrongTypeErrorTypeProvider.class, TimeoutErrorTypeProvider.class})
     public void decr(@Connection LettuceRedisConnection connection,
                      String key,
                      CompletionCallback<Long, Void> callback) {
@@ -152,7 +156,7 @@ public class KeyValueCommandOperations {
 
     @DisplayName("GET")
     @MediaType(value = MediaType.TEXT_PLAIN, strict = false)
-    @Throws({NilErrorTypeProvider.class, WrongTypeErrorTypeProvider.class})
+    @Throws({NilErrorTypeProvider.class, WrongTypeErrorTypeProvider.class, TimeoutErrorTypeProvider.class})
     public void get(@Connection LettuceRedisConnection connection,
                     String key,
                     CompletionCallback<String, Void> callback) {
@@ -172,7 +176,7 @@ public class KeyValueCommandOperations {
 
     @DisplayName("GETRANGE")
     @MediaType(value = MediaType.TEXT_PLAIN, strict = false)
-    @Throws({NilErrorTypeProvider.class, WrongTypeErrorTypeProvider.class})
+    @Throws({NilErrorTypeProvider.class, WrongTypeErrorTypeProvider.class, TimeoutErrorTypeProvider.class})
     public void getrange(@Connection LettuceRedisConnection connection,
                          String key,
                          Integer start,
@@ -192,7 +196,7 @@ public class KeyValueCommandOperations {
 
     @DisplayName("GETDEL")
     @MediaType(value = MediaType.TEXT_PLAIN, strict = false)
-    @Throws({NilErrorTypeProvider.class, WrongTypeErrorTypeProvider.class})
+    @Throws({NilErrorTypeProvider.class, WrongTypeErrorTypeProvider.class, TimeoutErrorTypeProvider.class})
     public void getdel(@Connection LettuceRedisConnection connection,
                        String key,
                        CompletionCallback<String, Void> callback) {
@@ -210,7 +214,7 @@ public class KeyValueCommandOperations {
     }
 
     @DisplayName("MGET")
-    @Throws(ArgumentErrorTypeProvider.class)
+    @Throws({ArgumentErrorTypeProvider.class, TimeoutErrorTypeProvider.class})
     public void mget(@Connection LettuceRedisConnection connection,
                      List<String> keys,
                      CompletionCallback<List<String>, Void> callback) {
@@ -230,7 +234,7 @@ public class KeyValueCommandOperations {
     }
 
     @DisplayName("TOUCH")
-    @Throws(ArgumentErrorTypeProvider.class)
+    @Throws({ArgumentErrorTypeProvider.class, TimeoutErrorTypeProvider.class})
     public void touch(@Connection LettuceRedisConnection connection,
                       List<String> keys,
                       CompletionCallback<Void, Void> callback) {
@@ -246,7 +250,7 @@ public class KeyValueCommandOperations {
 
     @DisplayName("GETSET")
     @MediaType(value = MediaType.TEXT_PLAIN, strict = false)
-    @Throws(WrongTypeErrorTypeProvider.class)
+    @Throws({WrongTypeErrorTypeProvider.class, TimeoutErrorTypeProvider.class})
     public void getset(@Connection LettuceRedisConnection connection,
                        String key,
                        @Content String value,
@@ -262,6 +266,7 @@ public class KeyValueCommandOperations {
     }
 
     @DisplayName("DEL")
+    @Throws(TimeoutErrorTypeProvider.class)
     public void del(@Connection LettuceRedisConnection connection,
                     List<String> keys,
                     CompletionCallback<Long, Void> callback) {
@@ -276,6 +281,7 @@ public class KeyValueCommandOperations {
     }
 
     @DisplayName("TTL")
+    @Throws(TimeoutErrorTypeProvider.class)
     public void ttl(@Connection LettuceRedisConnection connection,
                     String key,
                     CompletionCallback<Long, Void> callback) {
@@ -289,6 +295,7 @@ public class KeyValueCommandOperations {
     }
 
     @DisplayName("PTTL")
+    @Throws(TimeoutErrorTypeProvider.class)
     public void pttl(@Connection LettuceRedisConnection connection,
                     String key,
                     CompletionCallback<Long, Void> callback) {
@@ -302,7 +309,7 @@ public class KeyValueCommandOperations {
     }
 
     @DisplayName("EXPIRE")
-    @Throws(ArgumentErrorTypeProvider.class)
+    @Throws({ArgumentErrorTypeProvider.class, TimeoutErrorTypeProvider.class})
     public void expire(@Connection LettuceRedisConnection connection,
                        String key,
                        Integer seconds,
@@ -330,7 +337,7 @@ public class KeyValueCommandOperations {
     }
 
     @DisplayName("PEXPIRE")
-    @Throws(ArgumentErrorTypeProvider.class)
+    @Throws({ArgumentErrorTypeProvider.class, TimeoutErrorTypeProvider.class})
     public void pexpire(@Connection LettuceRedisConnection connection,
                        String key,
                        Integer milliseconds,
@@ -358,6 +365,7 @@ public class KeyValueCommandOperations {
     }
 
     @DisplayName("PERSIST")
+    @Throws(TimeoutErrorTypeProvider.class)
     public void persist(@Connection LettuceRedisConnection connection,
                         String key,
                         CompletionCallback<Boolean, Void> callback) {
@@ -371,6 +379,7 @@ public class KeyValueCommandOperations {
     }
 
     @DisplayName("SCAN")
+    @Throws(TimeoutErrorTypeProvider.class)
     public void scan(@Connection LettuceRedisConnection connection,
                      Integer cursor,
                      @Optional String match,

@@ -6,6 +6,7 @@ import cloud.anypoint.redis.internal.exception.ArgumentException;
 import cloud.anypoint.redis.internal.exception.NilValueException;
 import cloud.anypoint.redis.internal.metadata.ArgumentErrorTypeProvider;
 import cloud.anypoint.redis.internal.metadata.NilErrorTypeProvider;
+import cloud.anypoint.redis.internal.metadata.TimeoutErrorTypeProvider;
 import cloud.anypoint.redis.internal.metadata.WrongTypeErrorTypeProvider;
 import io.lettuce.core.KeyValue;
 import io.lettuce.core.Value;
@@ -26,7 +27,7 @@ public class HashCommandOperations {
     private final Logger LOGGER = LoggerFactory.getLogger(HashCommandOperations.class);
 
     @DisplayName("HGETALL")
-    @Throws(WrongTypeErrorTypeProvider.class)
+    @Throws({TimeoutErrorTypeProvider.class, WrongTypeErrorTypeProvider.class})
     public void hgetall(@Connection LettuceRedisConnection connection,
                         String key,
                         CompletionCallback<Map<String, String>, Void> callback) {
@@ -43,7 +44,7 @@ public class HashCommandOperations {
 
     @DisplayName("HGET")
     @MediaType(value = "text/plain", strict = false)
-    @Throws({WrongTypeErrorTypeProvider.class, NilErrorTypeProvider.class})
+    @Throws({TimeoutErrorTypeProvider.class, WrongTypeErrorTypeProvider.class, NilErrorTypeProvider.class})
     public void hget(@Connection LettuceRedisConnection connection,
                      String key,
                      String field,
@@ -61,7 +62,7 @@ public class HashCommandOperations {
     }
 
     @DisplayName("HLEN")
-    @Throws(WrongTypeErrorTypeProvider.class)
+    @Throws({TimeoutErrorTypeProvider.class, WrongTypeErrorTypeProvider.class})
     public void hlen(@Connection LettuceRedisConnection connection,
                      String key,
                      CompletionCallback<Long, Void> callback) {
@@ -75,7 +76,7 @@ public class HashCommandOperations {
     }
 
     @DisplayName("HSET")
-    @Throws({WrongTypeErrorTypeProvider.class, ArgumentErrorTypeProvider.class})
+    @Throws({TimeoutErrorTypeProvider.class, WrongTypeErrorTypeProvider.class, ArgumentErrorTypeProvider.class})
     public void hset(@Connection LettuceRedisConnection connection,
                      String key,
                      @Content Map<String, String> fields,
