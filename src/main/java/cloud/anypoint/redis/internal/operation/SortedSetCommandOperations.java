@@ -62,4 +62,19 @@ public class SortedSetCommandOperations {
                                         .build()),
                         callback::error);
     }
+
+    @DisplayName("ZSCORE")
+    @Throws({TimeoutErrorTypeProvider.class, WrongTypeErrorTypeProvider.class})
+    public void zscore(@Connection LettuceRedisConnection connection,
+                       String key,
+                       String member,
+                       CompletionCallback<Double, Void> callback) {
+        LOGGER.debug("ZSCORE {} {}", key, member);
+        mapErrors(connection.commands().zscore(key, member), "ZSCORE", key)
+            .subscribe(
+                result -> callback.success(Result.<Double, Void>builder()
+                        .output(result)
+                        .build()),
+                callback::error);
+    }
 }
