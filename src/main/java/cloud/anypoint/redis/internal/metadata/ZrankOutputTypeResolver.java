@@ -1,5 +1,6 @@
 package cloud.anypoint.redis.internal.metadata;
 
+import org.mule.metadata.api.builder.ObjectTypeBuilder;
 import org.mule.metadata.api.model.MetadataType;
 import org.mule.runtime.api.connection.ConnectionException;
 import org.mule.runtime.api.metadata.MetadataContext;
@@ -11,17 +12,18 @@ import org.mule.runtime.api.metadata.resolving.TypeKeysResolver;
 import java.util.Collections;
 import java.util.Set;
 
-public class OptionalCountOutputTypeResolver implements TypeKeysResolver, OutputTypeResolver<Integer> {
+public class ZrankOutputTypeResolver implements TypeKeysResolver, OutputTypeResolver<Boolean> {
 
     @Override
-    public MetadataType getOutputType(MetadataContext metadataContext, Integer integer) throws MetadataResolvingException, ConnectionException {
-        if (null == integer) {
-            return metadataContext.getTypeBuilder()
-                    .stringType()
-                    .build();
+    public MetadataType getOutputType(MetadataContext metadataContext, Boolean b) throws MetadataResolvingException, ConnectionException {
+        if (b) {
+            ObjectTypeBuilder outputPayloadTypeBuilder = metadataContext.getTypeBuilder().objectType();
+            outputPayloadTypeBuilder.addField().key("rank").value(metadataContext.getTypeBuilder().numberType());
+            outputPayloadTypeBuilder.addField().key("score").value(metadataContext.getTypeBuilder().numberType());
+            return outputPayloadTypeBuilder.build();
         }
         return metadataContext.getTypeBuilder()
-                .arrayType().of(metadataContext.getTypeBuilder().stringType())
+                .numberType()
                 .build();
     }
 
@@ -37,6 +39,6 @@ public class OptionalCountOutputTypeResolver implements TypeKeysResolver, Output
 
     @Override
     public String getCategoryName() {
-        return "Redis Optional Count Reply";
+        return "Redis ZRANK Reply";
     }
 }

@@ -3,13 +3,20 @@ package cloud.anypoint.redis.internal.operation;
 import static cloud.anypoint.redis.internal.util.ErrorDecorator.mapErrors;
 
 import cloud.anypoint.redis.internal.connection.LettuceRedisConnection;
+import cloud.anypoint.redis.internal.exception.NilValueException;
+import cloud.anypoint.redis.internal.metadata.NilErrorTypeProvider;
 import cloud.anypoint.redis.internal.metadata.TimeoutErrorTypeProvider;
 import cloud.anypoint.redis.internal.metadata.WrongTypeErrorTypeProvider;
+import cloud.anypoint.redis.internal.metadata.ZrankOutputTypeResolver;
 import io.lettuce.core.ScoredValue;
 import io.lettuce.core.ZAddArgs;
 import org.mule.runtime.extension.api.annotation.error.Throws;
+import org.mule.runtime.extension.api.annotation.metadata.MetadataKeyId;
+import org.mule.runtime.extension.api.annotation.metadata.OutputResolver;
 import org.mule.runtime.extension.api.annotation.param.Connection;
 import org.mule.runtime.extension.api.annotation.param.Content;
+import org.mule.runtime.extension.api.annotation.param.MediaType;
+import org.mule.runtime.extension.api.annotation.param.Optional;
 import org.mule.runtime.extension.api.annotation.param.display.DisplayName;
 import org.mule.runtime.extension.api.runtime.operation.Result;
 import org.mule.runtime.extension.api.runtime.process.CompletionCallback;
@@ -17,7 +24,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import reactor.core.publisher.Mono;
 
+import java.util.HashMap;
 import java.util.Map;
+import java.util.function.Function;
 
 public class SortedSetCommandOperations {
     private final Logger LOGGER = LoggerFactory.getLogger(SortedSetCommandOperations.class);
@@ -75,6 +84,33 @@ public class SortedSetCommandOperations {
                 result -> callback.success(Result.<Double, Void>builder()
                         .output(result)
                         .build()),
+                callback::error);
+    }
+
+    @DisplayName("ZRANK")
+    @MediaType(value = "application/java", strict = true)
+    @OutputResolver(output = ZrankOutputTypeResolver.class)
+    @Throws({TimeoutErrorTypeProvider.class, NilErrorTypeProvider.class, WrongTypeErrorTypeProvider.class})
+    public void zrank(@Connection LettuceRedisConnection connection,
+                      String key,
+                      String member,
+                      @MetadataKeyId @Optional boolean withScore,
+                      CompletionCallback<Object, Void> callback) {
+        LOGGER.debug("ZRANK {} {}", key, member);
+        Mono<Object> cmd = connection.commands().zrank(key, member).map(Function.identity());
+        if (withScore) {
+            cmd = connection.commands().zrankWithScore(key, member).map(scoredValue -> new HashMap<String, Object>() {{
+                put("rank", scoredValue.getValue());
+                put("score", scoredValue.getScore());
+            }});
+        }
+
+        mapErrors(cmd, "ZRANK", key)
+            .switchIfEmpty(Mono.error(new NilValueException("ZRANK", key)))
+            .subscribe(
+                result -> callback.success(Result.<Object, Void>builder()
+                    .output(result)
+                    .build()),
                 callback::error);
     }
 }
