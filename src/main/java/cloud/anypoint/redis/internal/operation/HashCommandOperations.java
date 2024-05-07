@@ -1,19 +1,23 @@
 package cloud.anypoint.redis.internal.operation;
 
 import static cloud.anypoint.redis.internal.util.ErrorDecorator.mapErrors;
+
+import cloud.anypoint.redis.api.ScanAttributes;
 import cloud.anypoint.redis.internal.connection.LettuceRedisConnection;
 import cloud.anypoint.redis.internal.exception.ArgumentException;
 import cloud.anypoint.redis.internal.exception.NilValueException;
+import cloud.anypoint.redis.internal.exception.WrongTypeException;
 import cloud.anypoint.redis.internal.metadata.ArgumentErrorTypeProvider;
 import cloud.anypoint.redis.internal.metadata.NilErrorTypeProvider;
 import cloud.anypoint.redis.internal.metadata.TimeoutErrorTypeProvider;
 import cloud.anypoint.redis.internal.metadata.WrongTypeErrorTypeProvider;
-import io.lettuce.core.KeyValue;
-import io.lettuce.core.Value;
+import io.lettuce.core.*;
+import org.mule.runtime.core.api.util.StringUtils;
 import org.mule.runtime.extension.api.annotation.error.Throws;
 import org.mule.runtime.extension.api.annotation.param.Connection;
 import org.mule.runtime.extension.api.annotation.param.Content;
 import org.mule.runtime.extension.api.annotation.param.MediaType;
+import org.mule.runtime.extension.api.annotation.param.Optional;
 import org.mule.runtime.extension.api.annotation.param.display.DisplayName;
 import org.mule.runtime.extension.api.runtime.operation.Result;
 import org.mule.runtime.extension.api.runtime.process.CompletionCallback;
@@ -21,6 +25,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import reactor.core.publisher.Mono;
 
+import java.util.List;
 import java.util.Map;
 
 public class HashCommandOperations {
@@ -92,5 +97,35 @@ public class HashCommandOperations {
                         .build()),
                     callback::error);
         }
+    }
+
+    @DisplayName("HSCAN")
+    @Throws({TimeoutErrorTypeProvider.class, WrongTypeErrorTypeProvider.class})
+    public void hscan(@Connection LettuceRedisConnection connection,
+                      String key,
+                      Integer cursor,
+                      @Optional String match,
+                      @Optional Integer count,
+                      CompletionCallback<Map<String, String>, ScanAttributes> callback) {
+        ScanArgs args = new ScanArgs();
+        if (!StringUtils.isEmpty(match)) {
+            args.match(match);
+        }
+        if (null != count) {
+            args.limit(count);
+        }
+        LOGGER.debug("HSCAN {} {}", key, cursor);
+        Mono<MapScanCursor<String, String>> cmd = connection.commands().hscan(key, ScanCursor.of(cursor.toString()), args);
+        mapErrors(cmd, "HSCAN", key)
+                .subscribe(
+                        result -> callback.success(
+                                Result.<Map<String, String>, ScanAttributes>builder()
+                                        .output(result.getMap())
+                                        .attributes(new ScanAttributes() {{
+                                            LOGGER.debug("cursor {}", result.getCursor());
+                                            setCursor(Integer.parseInt(result.getCursor()));
+                                        }})
+                                        .build()),
+                        callback::error);
     }
 }

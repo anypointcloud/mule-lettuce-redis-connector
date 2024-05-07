@@ -175,6 +175,20 @@ public class SetCommandOperations {
                 callback::error);
     }
 
+    @DisplayName("SMEMBERS")
+    @Throws({TimeoutErrorTypeProvider.class, WrongTypeErrorTypeProvider.class})
+    public void smembers(@Connection LettuceRedisConnection connection,
+                         String key,
+                         CompletionCallback<List<String>, Void> callback) {
+        Mono<List<String>> cmd = connection.commands().smembers(key).collectList();
+        mapErrors(cmd, "SMEMBERS", key)
+                .subscribe(
+                        result -> callback.success(Result.<List<String>, Void>builder()
+                                .output(result)
+                                .build()),
+                        callback::error);
+    }
+
     @DisplayName("SSCAN")
     @Throws({TimeoutErrorTypeProvider.class, WrongTypeErrorTypeProvider.class})
     public void sscan(@Connection LettuceRedisConnection connection,
@@ -193,12 +207,6 @@ public class SetCommandOperations {
         LOGGER.debug("SSCAN {} {}", key, cursor);
         Mono<ValueScanCursor<String>> cmd = connection.commands().sscan(key, ScanCursor.of(cursor.toString()), args);
         mapErrors(cmd, "SSCAN", key)
-                .onErrorMap(RedisCommandExecutionException.class, t -> {
-                    if (t.getMessage().startsWith("WRONGTYPE")) {
-                        return new WrongTypeException("SSCAN", key, t);
-                    }
-                    return t;
-                })
                 .subscribe(
                         result -> callback.success(
                                 Result.<List<String>, ScanAttributes>builder()
@@ -210,19 +218,5 @@ public class SetCommandOperations {
                                         .build()),
                         callback::error
                 );
-    }
-
-    @DisplayName("SMEMBERS")
-    @Throws({TimeoutErrorTypeProvider.class, WrongTypeErrorTypeProvider.class})
-    public void smembers(@Connection LettuceRedisConnection connection,
-                         String key,
-                         CompletionCallback<List<String>, Void> callback) {
-        Mono<List<String>> cmd = connection.commands().smembers(key).collectList();
-        mapErrors(cmd, "SMEMBERS", key)
-                .subscribe(
-                    result -> callback.success(Result.<List<String>, Void>builder()
-                        .output(result)
-                        .build()),
-                    callback::error);
     }
 }
