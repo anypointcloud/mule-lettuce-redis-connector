@@ -23,6 +23,7 @@ import org.mule.runtime.extension.api.runtime.operation.Result;
 import org.mule.runtime.extension.api.runtime.process.CompletionCallback;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 import java.util.List;
@@ -47,6 +48,21 @@ public class HashCommandOperations {
                 callback::error);
     }
 
+    @DisplayName("HEXISTS")
+    @Throws({TimeoutErrorTypeProvider.class, WrongTypeErrorTypeProvider.class})
+    public void hexists(@Connection LettuceRedisConnection connection,
+                        String key,
+                        String field,
+                        CompletionCallback<Boolean, Void> callback) {
+        LOGGER.debug("HEXISTS {} {}", key, field);
+        mapErrors(connection.commands().hexists(key, field), "HEXISTS", field)
+            .subscribe(
+                result -> callback.success(Result.<Boolean, Void>builder()
+                    .output(result)
+                    .build()),
+                callback::error);
+    }
+
     @DisplayName("HGET")
     @MediaType(value = "text/plain", strict = false)
     @Throws({TimeoutErrorTypeProvider.class, WrongTypeErrorTypeProvider.class, NilErrorTypeProvider.class})
@@ -54,16 +70,35 @@ public class HashCommandOperations {
                      String key,
                      String field,
                      CompletionCallback<String, Void> callback) {
-        LOGGER.debug("HGET {}", key);
+        LOGGER.debug("HGET {} {}", key, field);
         mapErrors(connection.commands().hget(key, field), "HGET", key)
-                // TODO: Add validator parameter to make this optional
-                .switchIfEmpty(Mono.error(new NilValueException("HGET", key)))
+            // TODO: Add validator parameter to make this optional
+            .switchIfEmpty(Mono.error(new NilValueException("HGET", key)))
+            .subscribe(
+                result ->
+                    callback.success(Result.<String, Void>builder()
+                        .output(result)
+                        .build()),
+                callback::error);
+    }
+
+    @DisplayName("HMGET")
+    @Throws({ArgumentErrorTypeProvider.class, TimeoutErrorTypeProvider.class, WrongTypeErrorTypeProvider.class})
+    public void hmget(@Connection LettuceRedisConnection connection,
+                      String key,
+                      @Content List<String> fieldNames,
+                      CompletionCallback<List<String>, Void> callback) {
+        if (fieldNames.isEmpty()) {
+            callback.error(new ArgumentException("HMGET", new IllegalArgumentException("at least one field is required")));
+        } else {
+            Flux<KeyValue<String, String>> cmd = connection.commands().hmget(key, fieldNames.stream().toArray(String[]::new));
+            mapErrors(cmd.map(kv -> kv.getValue()).collectList(), "HMGET", key)
                 .subscribe(
-                    result ->
-                        callback.success(Result.<String, Void>builder()
-                            .output(result)
-                            .build()),
+                    result -> callback.success(Result.<List<String>, Void>builder()
+                        .output(result)
+                        .build()),
                     callback::error);
+        }
     }
 
     @DisplayName("HLEN")
@@ -81,7 +116,7 @@ public class HashCommandOperations {
     }
 
     @DisplayName("HSET")
-    @Throws({TimeoutErrorTypeProvider.class, WrongTypeErrorTypeProvider.class, ArgumentErrorTypeProvider.class})
+    @Throws({ArgumentErrorTypeProvider.class, TimeoutErrorTypeProvider.class, WrongTypeErrorTypeProvider.class})
     public void hset(@Connection LettuceRedisConnection connection,
                      String key,
                      @Content Map<String, String> fields,
