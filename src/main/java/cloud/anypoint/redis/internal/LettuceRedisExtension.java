@@ -12,7 +12,7 @@ import org.mule.sdk.api.annotation.JavaVersionSupport;
 
 @Xml(prefix = "lettuce")
 @Extension(name = "Lettuce Redis", vendor = "Anypoint Cloud")
-@Configurations(RedisConfiguration.class)
+@Configurations({RedisConfiguration.class, RedisPubSubConfiguration.class})
 @JavaVersionSupport({JAVA_8, JAVA_11, JAVA_17})
 @ErrorTypes(ConnectorError.class)
 public class LettuceRedisExtension {

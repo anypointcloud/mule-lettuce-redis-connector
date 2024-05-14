@@ -2,6 +2,7 @@ package cloud.anypoint.redis.internal.operation;
 
 import static cloud.anypoint.redis.internal.util.ErrorDecorator.mapErrors;
 import cloud.anypoint.redis.api.ScanAttributes;
+import cloud.anypoint.redis.internal.connection.LettuceRedisConnectionProvider;
 import cloud.anypoint.redis.internal.exception.ArgumentException;
 import cloud.anypoint.redis.internal.exception.NilValueException;
 import cloud.anypoint.redis.internal.connection.LettuceRedisConnection;
@@ -11,6 +12,7 @@ import cloud.anypoint.redis.internal.metadata.TimeoutErrorTypeProvider;
 import cloud.anypoint.redis.internal.metadata.WrongTypeErrorTypeProvider;
 import io.lettuce.core.*;
 import org.mule.runtime.core.api.util.StringUtils;
+import org.mule.runtime.extension.api.annotation.connectivity.ConnectionProviders;
 import org.mule.runtime.extension.api.annotation.error.Throws;
 import org.mule.runtime.extension.api.annotation.param.Connection;
 import org.mule.runtime.extension.api.annotation.param.Content;
@@ -71,10 +73,10 @@ public class KeyValueCommandOperations {
             cmd = connection.commands().setGet(key, value, args);
         }
         mapErrors(cmd, "SET", key).subscribe(
-                result -> callback.success(Result.<String, Void>builder()
-                        .output(result)
-                        .build()),
-                callback::error);
+            result -> callback.success(Result.<String, Void>builder()
+                .output(result)
+                .build()),
+            callback::error);
     }
 
     @DisplayName("MSET")
@@ -84,8 +86,8 @@ public class KeyValueCommandOperations {
                      CompletionCallback<Void, Void> callback) {
         LOGGER.debug("MSET {}", keyValues.keySet());
         mapErrors(connection.commands().mset(keyValues), "MSET")
-                .subscribe(result -> callback.success(Result.<Void, Void>builder().build()),
-                        callback::error);
+            .subscribe(result -> callback.success(Result.<Void, Void>builder().build()),
+                callback::error);
     }
 
     @DisplayName("COPY")
@@ -120,10 +122,11 @@ public class KeyValueCommandOperations {
                        CompletionCallback<Long, Void> callback) {
         LOGGER.debug("APPEND {}", key);
         mapErrors(connection.commands().append(key, value), "APPEND")
-                .subscribe(result -> callback.success(Result.<Long, Void>builder()
-                        .output(result)
-                        .build()),
-                    callback::error);
+            .subscribe(
+                result -> callback.success(Result.<Long, Void>builder()
+                    .output(result)
+                    .build()),
+                callback::error);
     }
 
     @DisplayName("INCR")
@@ -133,11 +136,11 @@ public class KeyValueCommandOperations {
                      CompletionCallback<Long, Void> callback) {
         LOGGER.debug("INCR {}", key);
         mapErrors(connection.commands().incr(key), "INCR", key)
-                .subscribe(
-                    result -> callback.success(Result.<Long, Void>builder()
-                        .output(result)
-                        .build()),
-                    callback::error);
+            .subscribe(
+                result -> callback.success(Result.<Long, Void>builder()
+                    .output(result)
+                    .build()),
+                callback::error);
     }
 
     @DisplayName("DECR")
@@ -147,11 +150,11 @@ public class KeyValueCommandOperations {
                      CompletionCallback<Long, Void> callback) {
         LOGGER.debug("DECR {}", key);
         mapErrors(connection.commands().decr(key), "DECR", key)
-                .subscribe(
-                    result -> callback.success(Result.<Long, Void>builder()
-                        .output(result)
-                        .build()),
-                    callback::error);
+            .subscribe(
+                result -> callback.success(Result.<Long, Void>builder()
+                    .output(result)
+                    .build()),
+                callback::error);
     }
 
     @DisplayName("GET")
@@ -162,16 +165,16 @@ public class KeyValueCommandOperations {
                     CompletionCallback<String, Void> callback) {
         LOGGER.debug("GET {}", key);
         mapErrors(connection.commands().get(key), "GET", key)
-                // TODO: Add validator parameter to make this optional
-                .switchIfEmpty(Mono.error(new NilValueException("GET", key)))
-                .subscribe(
-                    result -> {
-                        LOGGER.trace("GET result {}", result);
-                        callback.success(Result.<String, Void>builder()
-                                .output(result)
-                                .build());
-                    },
-                    callback::error);
+            // TODO: Add validator parameter to make this optional
+            .switchIfEmpty(Mono.error(new NilValueException("GET", key)))
+            .subscribe(
+                result -> {
+                    LOGGER.trace("GET result {}", result);
+                    callback.success(Result.<String, Void>builder()
+                        .output(result)
+                        .build());
+                },
+                callback::error);
     }
 
     @DisplayName("GETRANGE")
@@ -185,13 +188,13 @@ public class KeyValueCommandOperations {
         LOGGER.debug("GETRANGE {} {} {}", key, start, end);
         Mono<String> cmd = connection.commands().getrange(key, start, end);
         mapErrors(cmd, "GETRANGE", key)
-                // TODO: Add validator parameter to make this optional
-                .switchIfEmpty(Mono.error(new NilValueException("GETRANGE", key)))
-                .subscribe(
-                    result -> callback.success(Result.<String, Void>builder()
-                        .output(result)
-                        .build()),
-                    callback::error);
+            // TODO: Add validator parameter to make this optional
+            .switchIfEmpty(Mono.error(new NilValueException("GETRANGE", key)))
+            .subscribe(
+                result -> callback.success(Result.<String, Void>builder()
+                    .output(result)
+                    .build()),
+                callback::error);
     }
 
     @DisplayName("GETDEL")
@@ -203,14 +206,14 @@ public class KeyValueCommandOperations {
         LOGGER.debug("GETDEL {}", key);
         Mono<String> cmd = connection.commands().getdel(key);
         mapErrors(cmd, "GETDEL", key)
-                // TODO: Add validator parameter to make this optional
-                .switchIfEmpty(Mono.error(new NilValueException("GETDEL", key)))
-                .subscribe(
-                    result -> callback.success(Result.<String, Void>builder()
-                        .output(result)
-                        .build()),
-                    callback::error
-                );
+            // TODO: Add validator parameter to make this optional
+            .switchIfEmpty(Mono.error(new NilValueException("GETDEL", key)))
+            .subscribe(
+                result -> callback.success(Result.<String, Void>builder()
+                    .output(result)
+                    .build()),
+                callback::error
+            );
     }
 
     @DisplayName("MGET")
@@ -221,8 +224,8 @@ public class KeyValueCommandOperations {
         LOGGER.debug("MGET {}", keys);
         try {
             Mono<List<String>> cmd = connection.commands().mget(keys.stream().toArray(String[]::new))
-                    .map(kv -> kv.getValueOrElse(null))
-                    .collectList();
+                .map(kv -> kv.getValueOrElse(null))
+                .collectList();
             mapErrors(cmd, "MGET").subscribe(
                 result -> callback.success(Result.<List<String>, Void>builder()
                     .output(result)
@@ -272,12 +275,12 @@ public class KeyValueCommandOperations {
                     CompletionCallback<Long, Void> callback) {
         LOGGER.debug("DEL {}", keys);
         mapErrors(connection.commands().del(keys.stream().toArray(String[]::new)), "DEL")
-                .subscribe(
-                        result -> callback.success(Result.<Long, Void>builder()
-                                .output(result)
-                                .build()),
-                        callback::error
-                );
+            .subscribe(
+                result -> callback.success(Result.<Long, Void>builder()
+                    .output(result)
+                    .build()),
+                callback::error
+            );
     }
 
     @DisplayName("TTL")
@@ -303,8 +306,8 @@ public class KeyValueCommandOperations {
         mapErrors(connection.commands().pttl(key), "PTTL", key)
             .subscribe(
                 result -> callback.success(Result.<Long, Void>builder()
-                        .output(result)
-                        .build()),
+                    .output(result)
+                    .build()),
                 callback::error);
     }
 
@@ -359,8 +362,8 @@ public class KeyValueCommandOperations {
         mapErrors(connection.commands().pexpire(key, milliseconds, args), "PEXPIRE", key)
             .subscribe(
                 result -> callback.success(Result.<Boolean, Void>builder()
-                        .output(result)
-                        .build()),
+                    .output(result)
+                    .build()),
                 callback::error);
     }
 

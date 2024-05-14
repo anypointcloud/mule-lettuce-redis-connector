@@ -7,7 +7,7 @@ import org.mule.runtime.extension.api.annotation.connectivity.ConnectionProvider
 
 //https://lettuce.io/core/release/reference/#getting-started.start-coding
 @Operations({ChannelCommandOperations.class, DynamicOperations.class, SearchOperations.class, HashCommandOperations.class, KeyValueCommandOperations.class, SetCommandOperations.class, ListCommandOperations.class, SortedSetCommandOperations.class})
-@ConnectionProviders(LettuceRedisConnectionProvider.class)
+@ConnectionProviders({LettuceRedisConnectionProvider.class})
 public class RedisConfiguration {
 
 }
