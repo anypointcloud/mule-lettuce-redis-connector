@@ -15,21 +15,21 @@ import reactor.core.Disposable;
 
 import java.util.List;
 
-@DisplayName("SUBSCRIBE")
-@Alias("subscribe-channel")
+@DisplayName("PSUBSCRIBE")
+@Alias("subscribe-channel-pattern")
 @MediaType(value = "text/plain", strict = false)
-public class ChannelListener extends BaseChannelListener {
-    protected final Logger LOGGER = LoggerFactory.getLogger(ChannelListener.class);
+public class ChannelPatternListener extends BaseChannelListener {
+    protected final Logger LOGGER = LoggerFactory.getLogger(ChannelPatternListener.class);
     private Disposable subscriptionDisposer;
 
     @Parameter
-    private List<String> channels;
+    private List<String> patterns;
 
     @Override
     public void onStart(SourceCallback<String, ChannelAttributes> sourceCallback) throws MuleException {
-        LOGGER.debug("Starting channel listener {}", channels);
+        LOGGER.debug("Starting channel pattern listener {}", patterns);
         super.onStart(sourceCallback);
-        subscriptionDisposer = connection.commands().observeChannels().subscribe(
+        subscriptionDisposer = connection.commands().observePatterns().subscribe(
                 message -> sourceCallback.handle(Result.<String, ChannelAttributes>builder()
                         .output(message.getMessage())
                         .attributes(new ChannelAttributes() {{
@@ -37,19 +37,19 @@ public class ChannelListener extends BaseChannelListener {
                         }})
                         .build()),
                 e -> sourceCallback.onConnectionException(new ConnectionException(e)));
-        connection.commands().subscribe(channels.stream().toArray(String[]::new))
+        connection.commands().psubscribe(patterns.stream().toArray(String[]::new))
                 .doOnError(e -> sourceCallback.onConnectionException(new ConnectionException(e)))
-                .doOnSuccess(v -> LOGGER.trace("Completed SUBSCRIBE {}", channels))
+                .doOnSuccess(v -> LOGGER.trace("Completed PSUBSCRIBE {}", patterns))
                 .subscribe();
     }
 
     @Override
     public void onStop() {
-        LOGGER.debug("Stopping channel listener {}", channels);
+        LOGGER.debug("Stopping channel pattern listener {}", patterns);
         super.onStop();
         subscriptionDisposer.dispose();
-        connection.commands().unsubscribe(channels.toArray(new String[0]))
-            .doOnSuccess(result -> LOGGER.trace("UNSUBSCRIBE succeeded {}", channels))
-            .subscribe();
+        connection.commands().punsubscribe(patterns.toArray(new String[0]))
+                .doOnSuccess(result -> LOGGER.trace("PUNSUBSCRIBE succeeded {}", patterns))
+                .subscribe();
     }
 }
