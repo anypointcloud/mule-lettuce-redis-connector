@@ -2,8 +2,8 @@ package cloud.anypoint.redis.api;
 
 public class GeospatialItem {
     private String name;
-    private GeoLocation location;
-
+    private double longitude;
+    private double latitude;
     public String getName() {
         return name;
     }
@@ -11,12 +11,20 @@ public class GeospatialItem {
     public void setName(String name) {
         this.name = name;
     }
-    public GeoLocation getLocation() {
-        return location;
+
+    public double getLatitude() {
+        return latitude;
     }
 
-    public void setLocation(GeoLocation location) {
-        this.location = location;
+    public void setLatitude(double latitude) {
+        this.latitude = latitude;
     }
 
+    public double getLongitude() {
+        return longitude;
+    }
+
+    public void setLongitude(double longitude) {
+        this.longitude = longitude;
+    }
 }

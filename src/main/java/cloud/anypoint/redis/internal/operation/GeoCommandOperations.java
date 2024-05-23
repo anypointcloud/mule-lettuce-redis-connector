@@ -50,7 +50,7 @@ public class GeoCommandOperations {
         if (xx) args = args.xx();
         if (ch) args = args.ch();
         Stream<GeoValue<String>> geoValues = items.stream()
-                .map(item -> GeoValue.just(item.getLocation().getLongitude(), item.getLocation().getLatitude(), item.getName()));
+                .map(item -> GeoValue.just(item.getLongitude(), item.getLatitude(), item.getName()));
         Mono<Long> cmd = connection.commands().geoadd(key, args, geoValues.toArray(GeoValue[]::new));
         mapErrors(cmd, "GEOADD", key).subscribe(
             result -> callback.success(Result.<Long, Void>builder()
