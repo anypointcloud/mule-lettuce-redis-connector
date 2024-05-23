@@ -1,4 +1,4 @@
-package cloud.anypoint.redis.api;
+package cloud.anypoint.redis.api.attributes;
 
 public class ScanAttributes {
     private int cursor;

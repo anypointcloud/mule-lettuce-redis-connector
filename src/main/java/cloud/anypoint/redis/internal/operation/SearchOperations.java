@@ -1,8 +1,8 @@
 package cloud.anypoint.redis.internal.operation;
 
-import cloud.anypoint.redis.api.LettuceKeyPagingProvider;
-import cloud.anypoint.redis.api.LettuceMapPagingProvider;
-import cloud.anypoint.redis.api.LettuceValuePagingProvider;
+import cloud.anypoint.redis.api.paging.LettuceKeyPagingProvider;
+import cloud.anypoint.redis.api.paging.LettuceMapPagingProvider;
+import cloud.anypoint.redis.api.paging.LettuceValuePagingProvider;
 import cloud.anypoint.redis.internal.connection.LettuceRedisConnection;
 import cloud.anypoint.redis.internal.metadata.TimeoutErrorTypeProvider;
 import cloud.anypoint.redis.internal.metadata.WrongTypeErrorTypeProvider;

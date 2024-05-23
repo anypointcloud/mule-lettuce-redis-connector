@@ -1,4 +1,4 @@
-package cloud.anypoint.redis.api;
+package cloud.anypoint.redis.api.error;
 
 import org.mule.runtime.extension.api.error.ErrorTypeDefinition;
 

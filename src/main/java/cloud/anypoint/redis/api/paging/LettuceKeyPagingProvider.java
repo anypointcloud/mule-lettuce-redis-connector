@@ -1,4 +1,4 @@
-package cloud.anypoint.redis.api;
+package cloud.anypoint.redis.api.paging;
 
 import cloud.anypoint.redis.internal.connection.LettuceRedisConnection;
 import io.lettuce.core.KeyScanCursor;

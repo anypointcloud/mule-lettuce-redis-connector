@@ -1,6 +1,6 @@
 package cloud.anypoint.redis.internal.exception;
 
-import cloud.anypoint.redis.api.ConnectorError;
+import cloud.anypoint.redis.api.error.ConnectorError;
 import org.mule.runtime.extension.api.exception.ModuleException;
 
 public class WrongTypeException extends ModuleException {

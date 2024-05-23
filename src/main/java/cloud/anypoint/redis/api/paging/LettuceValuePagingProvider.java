@@ -1,7 +1,6 @@
-package cloud.anypoint.redis.api;
+package cloud.anypoint.redis.api.paging;
 
 import cloud.anypoint.redis.internal.connection.LettuceRedisConnection;
-import io.lettuce.core.KeyScanCursor;
 import io.lettuce.core.ValueScanCursor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

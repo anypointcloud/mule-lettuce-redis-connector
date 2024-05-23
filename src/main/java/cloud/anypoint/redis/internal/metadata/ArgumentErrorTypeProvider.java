@@ -1,6 +1,6 @@
 package cloud.anypoint.redis.internal.metadata;
 
-import cloud.anypoint.redis.api.ConnectorError;
+import cloud.anypoint.redis.api.error.ConnectorError;
 import org.mule.runtime.extension.api.annotation.error.ErrorTypeProvider;
 import org.mule.runtime.extension.api.error.ErrorTypeDefinition;
 
