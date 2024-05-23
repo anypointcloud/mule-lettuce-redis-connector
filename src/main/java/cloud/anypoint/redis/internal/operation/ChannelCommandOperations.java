@@ -2,9 +2,7 @@ package cloud.anypoint.redis.internal.operation;
 
 import static cloud.anypoint.redis.internal.util.ErrorDecorator.mapErrors;
 import cloud.anypoint.redis.internal.connection.LettuceRedisConnection;
-import cloud.anypoint.redis.internal.metadata.ArgumentErrorTypeProvider;
-import cloud.anypoint.redis.internal.metadata.TimeoutErrorTypeProvider;
-import cloud.anypoint.redis.internal.metadata.WrongTypeErrorTypeProvider;
+import cloud.anypoint.redis.internal.metadata.AllCommandsErrorTypeProvider;
 import org.mule.runtime.extension.api.annotation.error.Throws;
 import org.mule.runtime.extension.api.annotation.param.Connection;
 import org.mule.runtime.extension.api.annotation.param.display.DisplayName;
@@ -17,7 +15,7 @@ public class ChannelCommandOperations {
     private final Logger LOGGER = LoggerFactory.getLogger(ChannelCommandOperations.class);
 
     @DisplayName("PUBLISH")
-    @Throws(TimeoutErrorTypeProvider.class)
+    @Throws(AllCommandsErrorTypeProvider.class)
     public void publish(@Connection LettuceRedisConnection connection,
                         String channel,
                         String message,

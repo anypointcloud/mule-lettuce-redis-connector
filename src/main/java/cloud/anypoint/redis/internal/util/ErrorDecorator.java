@@ -1,5 +1,6 @@
 package cloud.anypoint.redis.internal.util;
 
+import cloud.anypoint.redis.internal.exception.SyntaxErrorException;
 import cloud.anypoint.redis.internal.exception.TimeoutException;
 import cloud.anypoint.redis.internal.exception.WrongTypeException;
 import io.lettuce.core.RedisCommandExecutionException;
@@ -15,6 +16,9 @@ public class ErrorDecorator {
                     if (t.getMessage().startsWith("WRONGTYPE")) {
                         return new WrongTypeException(commandText, t);
                     }
+                    if (t.getMessage().equals("ERR syntax error")) {
+                        return new SyntaxErrorException(commandText, t);
+                    }
                     return t;
                 });
     }
@@ -24,6 +28,9 @@ public class ErrorDecorator {
             .onErrorMap(RedisCommandExecutionException.class, t -> {
                 if (t.getMessage().startsWith("WRONGTYPE")) {
                     return new WrongTypeException(commandText, key, t);
+                }
+                if (t.getMessage().equals("ERR syntax error")) {
+                    return new SyntaxErrorException(commandText, t);
                 }
                 return t;
             });

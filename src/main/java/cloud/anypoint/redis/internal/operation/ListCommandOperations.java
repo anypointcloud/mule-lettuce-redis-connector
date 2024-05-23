@@ -5,7 +5,7 @@ import cloud.anypoint.redis.internal.connection.LettuceRedisConnection;
 import cloud.anypoint.redis.internal.exception.ArgumentException;
 import cloud.anypoint.redis.internal.metadata.ArgumentErrorTypeProvider;
 import cloud.anypoint.redis.internal.metadata.OptionalCountOutputTypeResolver;
-import cloud.anypoint.redis.internal.metadata.TimeoutErrorTypeProvider;
+import cloud.anypoint.redis.internal.metadata.AllCommandsErrorTypeProvider;
 import cloud.anypoint.redis.internal.metadata.WrongTypeErrorTypeProvider;
 import org.mule.runtime.extension.api.annotation.error.Throws;
 import org.mule.runtime.extension.api.annotation.metadata.MetadataKeyId;
@@ -26,7 +26,7 @@ public class ListCommandOperations {
     private final Logger LOGGER = LoggerFactory.getLogger(ListCommandOperations.class);
 
     @DisplayName("LPUSH")
-    @Throws({TimeoutErrorTypeProvider.class, WrongTypeErrorTypeProvider.class, ArgumentErrorTypeProvider.class})
+    @Throws({AllCommandsErrorTypeProvider.class, WrongTypeErrorTypeProvider.class, ArgumentErrorTypeProvider.class})
     public void lpush(@Connection LettuceRedisConnection connection,
                       String key,
                       @Content List<String> members,
@@ -47,7 +47,7 @@ public class ListCommandOperations {
     @DisplayName("LPOP")
     @MediaType(value = "application/java", strict = true)
     @OutputResolver(output = OptionalCountOutputTypeResolver.class)
-    @Throws({TimeoutErrorTypeProvider.class, WrongTypeErrorTypeProvider.class})
+    @Throws({AllCommandsErrorTypeProvider.class, WrongTypeErrorTypeProvider.class})
     public void lpop(@Connection LettuceRedisConnection connection,
                      String key,
                      @MetadataKeyId @Optional Integer count,

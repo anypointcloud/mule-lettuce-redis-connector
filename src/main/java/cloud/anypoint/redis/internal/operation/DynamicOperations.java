@@ -6,7 +6,7 @@ import cloud.anypoint.redis.api.CommandReturnType;
 import cloud.anypoint.redis.internal.connection.LettuceRedisConnection;
 import cloud.anypoint.redis.internal.metadata.DynamicCommandOutputTypeResolver;
 import cloud.anypoint.redis.internal.metadata.NilErrorTypeProvider;
-import cloud.anypoint.redis.internal.metadata.TimeoutErrorTypeProvider;
+import cloud.anypoint.redis.internal.metadata.AllCommandsErrorTypeProvider;
 import cloud.anypoint.redis.internal.metadata.WrongTypeErrorTypeProvider;
 import org.mule.runtime.extension.api.annotation.error.Throws;
 import org.mule.runtime.extension.api.annotation.metadata.MetadataKeyId;
@@ -26,7 +26,7 @@ public class DynamicOperations {
 
     @OutputResolver(output = DynamicCommandOutputTypeResolver.class)
     @MediaType(value = "application/java", strict = false)
-    @Throws({NilErrorTypeProvider.class, WrongTypeErrorTypeProvider.class, TimeoutErrorTypeProvider.class})
+    @Throws({NilErrorTypeProvider.class, WrongTypeErrorTypeProvider.class, AllCommandsErrorTypeProvider.class})
     public void sendCommand(@Connection LettuceRedisConnection connection,
                             String command,
                             List<String> arguments,

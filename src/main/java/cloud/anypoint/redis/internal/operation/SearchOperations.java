@@ -4,7 +4,7 @@ import cloud.anypoint.redis.api.paging.LettuceKeyPagingProvider;
 import cloud.anypoint.redis.api.paging.LettuceMapPagingProvider;
 import cloud.anypoint.redis.api.paging.LettuceValuePagingProvider;
 import cloud.anypoint.redis.internal.connection.LettuceRedisConnection;
-import cloud.anypoint.redis.internal.metadata.TimeoutErrorTypeProvider;
+import cloud.anypoint.redis.internal.metadata.AllCommandsErrorTypeProvider;
 import cloud.anypoint.redis.internal.metadata.WrongTypeErrorTypeProvider;
 import io.lettuce.core.*;
 import org.mule.runtime.core.api.util.StringUtils;
@@ -26,7 +26,7 @@ public class SearchOperations {
 
     @Summary("Uses the SCAN command repeatedly to retrieve all keys that match the arguments, streaming the results and automatically handling the cursor returned from redis.")
     @MediaType(value = "application/java", strict = true)
-    @Throws(TimeoutErrorTypeProvider.class)
+    @Throws(AllCommandsErrorTypeProvider.class)
     public PagingProvider<LettuceRedisConnection, String> searchKeys(
             @Optional String match,
             @Optional String type,
@@ -49,7 +49,7 @@ public class SearchOperations {
 
     @Summary("Uses the SSCAN command repeatedly to retrieve all set members that match the arguments, streaming the results and automatically handling the cursor returned from redis.")
     @MediaType(value = "application/java", strict = true)
-    @Throws({TimeoutErrorTypeProvider.class, WrongTypeErrorTypeProvider.class})
+    @Throws({AllCommandsErrorTypeProvider.class, WrongTypeErrorTypeProvider.class})
     public PagingProvider<LettuceRedisConnection, String> searchSetMembers(
             String key,
             @Optional String match,
@@ -69,7 +69,7 @@ public class SearchOperations {
 
     @Summary("Uses the HSCAN command repeatedly to retrieve all hash fields that match the arguments, streaming the results and automatically handling the cursor returned from redis.")
     @MediaType(value = "application/java", strict = true)
-    @Throws({TimeoutErrorTypeProvider.class, WrongTypeErrorTypeProvider.class})
+    @Throws({AllCommandsErrorTypeProvider.class, WrongTypeErrorTypeProvider.class})
     public PagingProvider<LettuceRedisConnection, Map<String, String>> searchHashFields(
             String key,
             @Optional String match,

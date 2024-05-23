@@ -5,7 +5,7 @@ import static cloud.anypoint.redis.internal.util.ErrorDecorator.mapErrors;
 import cloud.anypoint.redis.internal.connection.LettuceRedisConnection;
 import cloud.anypoint.redis.internal.exception.NilValueException;
 import cloud.anypoint.redis.internal.metadata.NilErrorTypeProvider;
-import cloud.anypoint.redis.internal.metadata.TimeoutErrorTypeProvider;
+import cloud.anypoint.redis.internal.metadata.AllCommandsErrorTypeProvider;
 import cloud.anypoint.redis.internal.metadata.WrongTypeErrorTypeProvider;
 import cloud.anypoint.redis.internal.metadata.ZrankOutputTypeResolver;
 import io.lettuce.core.ScoredValue;
@@ -32,7 +32,7 @@ public class SortedSetCommandOperations {
     private final Logger LOGGER = LoggerFactory.getLogger(SortedSetCommandOperations.class);
 
     @DisplayName("ZADD")
-    @Throws({TimeoutErrorTypeProvider.class, WrongTypeErrorTypeProvider.class})
+    @Throws({AllCommandsErrorTypeProvider.class, WrongTypeErrorTypeProvider.class})
     public void zadd(@Connection LettuceRedisConnection connection,
                      String key,
                      @Content Map<String, Double> memberScores,
@@ -73,7 +73,7 @@ public class SortedSetCommandOperations {
     }
 
     @DisplayName("ZSCORE")
-    @Throws({TimeoutErrorTypeProvider.class, WrongTypeErrorTypeProvider.class})
+    @Throws({AllCommandsErrorTypeProvider.class, WrongTypeErrorTypeProvider.class})
     public void zscore(@Connection LettuceRedisConnection connection,
                        String key,
                        String member,
@@ -90,7 +90,7 @@ public class SortedSetCommandOperations {
     @DisplayName("ZRANK")
     @MediaType(value = "application/java", strict = true)
     @OutputResolver(output = ZrankOutputTypeResolver.class)
-    @Throws({TimeoutErrorTypeProvider.class, NilErrorTypeProvider.class, WrongTypeErrorTypeProvider.class})
+    @Throws({AllCommandsErrorTypeProvider.class, NilErrorTypeProvider.class, WrongTypeErrorTypeProvider.class})
     public void zrank(@Connection LettuceRedisConnection connection,
                       String key,
                       String member,

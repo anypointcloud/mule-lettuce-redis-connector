@@ -8,7 +8,7 @@ import cloud.anypoint.redis.internal.exception.ArgumentException;
 import cloud.anypoint.redis.internal.exception.NilValueException;
 import cloud.anypoint.redis.internal.metadata.ArgumentErrorTypeProvider;
 import cloud.anypoint.redis.internal.metadata.NilErrorTypeProvider;
-import cloud.anypoint.redis.internal.metadata.TimeoutErrorTypeProvider;
+import cloud.anypoint.redis.internal.metadata.AllCommandsErrorTypeProvider;
 import cloud.anypoint.redis.internal.metadata.WrongTypeErrorTypeProvider;
 import io.lettuce.core.*;
 import org.mule.runtime.core.api.util.StringUtils;
@@ -32,7 +32,7 @@ public class HashCommandOperations {
     private final Logger LOGGER = LoggerFactory.getLogger(HashCommandOperations.class);
 
     @DisplayName("HGETALL")
-    @Throws({TimeoutErrorTypeProvider.class, WrongTypeErrorTypeProvider.class})
+    @Throws({AllCommandsErrorTypeProvider.class, WrongTypeErrorTypeProvider.class})
     public void hgetall(@Connection LettuceRedisConnection connection,
                         String key,
                         CompletionCallback<Map<String, String>, Void> callback) {
@@ -48,7 +48,7 @@ public class HashCommandOperations {
     }
 
     @DisplayName("HEXISTS")
-    @Throws({TimeoutErrorTypeProvider.class, WrongTypeErrorTypeProvider.class})
+    @Throws({AllCommandsErrorTypeProvider.class, WrongTypeErrorTypeProvider.class})
     public void hexists(@Connection LettuceRedisConnection connection,
                         String key,
                         String field,
@@ -64,7 +64,7 @@ public class HashCommandOperations {
 
     @DisplayName("HGET")
     @MediaType(value = "text/plain", strict = false)
-    @Throws({TimeoutErrorTypeProvider.class, WrongTypeErrorTypeProvider.class, NilErrorTypeProvider.class})
+    @Throws({AllCommandsErrorTypeProvider.class, WrongTypeErrorTypeProvider.class, NilErrorTypeProvider.class})
     public void hget(@Connection LettuceRedisConnection connection,
                      String key,
                      String field,
@@ -82,7 +82,7 @@ public class HashCommandOperations {
     }
 
     @DisplayName("HMGET")
-    @Throws({ArgumentErrorTypeProvider.class, TimeoutErrorTypeProvider.class, WrongTypeErrorTypeProvider.class})
+    @Throws({ArgumentErrorTypeProvider.class, AllCommandsErrorTypeProvider.class, WrongTypeErrorTypeProvider.class})
     public void hmget(@Connection LettuceRedisConnection connection,
                       String key,
                       @Content List<String> fieldNames,
@@ -101,7 +101,7 @@ public class HashCommandOperations {
     }
 
     @DisplayName("HLEN")
-    @Throws({TimeoutErrorTypeProvider.class, WrongTypeErrorTypeProvider.class})
+    @Throws({AllCommandsErrorTypeProvider.class, WrongTypeErrorTypeProvider.class})
     public void hlen(@Connection LettuceRedisConnection connection,
                      String key,
                      CompletionCallback<Long, Void> callback) {
@@ -115,7 +115,7 @@ public class HashCommandOperations {
     }
 
     @DisplayName("HSET")
-    @Throws({ArgumentErrorTypeProvider.class, TimeoutErrorTypeProvider.class, WrongTypeErrorTypeProvider.class})
+    @Throws({ArgumentErrorTypeProvider.class, AllCommandsErrorTypeProvider.class, WrongTypeErrorTypeProvider.class})
     public void hset(@Connection LettuceRedisConnection connection,
                      String key,
                      @Content Map<String, String> fields,
@@ -134,7 +134,7 @@ public class HashCommandOperations {
     }
 
     @DisplayName("HSCAN")
-    @Throws({TimeoutErrorTypeProvider.class, WrongTypeErrorTypeProvider.class})
+    @Throws({AllCommandsErrorTypeProvider.class, WrongTypeErrorTypeProvider.class})
     public void hscan(@Connection LettuceRedisConnection connection,
                       String key,
                       Integer cursor,

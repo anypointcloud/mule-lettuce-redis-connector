@@ -5,7 +5,7 @@ import cloud.anypoint.redis.api.GeospatialItem;
 import cloud.anypoint.redis.internal.connection.LettuceRedisConnection;
 import cloud.anypoint.redis.internal.exception.ArgumentException;
 import cloud.anypoint.redis.internal.metadata.ArgumentErrorTypeProvider;
-import cloud.anypoint.redis.internal.metadata.TimeoutErrorTypeProvider;
+import cloud.anypoint.redis.internal.metadata.AllCommandsErrorTypeProvider;
 import cloud.anypoint.redis.internal.metadata.WrongTypeErrorTypeProvider;
 import io.lettuce.core.GeoAddArgs;
 import io.lettuce.core.GeoValue;
@@ -20,14 +20,13 @@ import org.slf4j.LoggerFactory;
 import reactor.core.publisher.Mono;
 
 import java.util.List;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 public class GeoCommandOperations {
     private final Logger LOGGER = LoggerFactory.getLogger(GeoCommandOperations.class);
 
     @DisplayName("GEOADD")
-    @Throws({ArgumentErrorTypeProvider.class, TimeoutErrorTypeProvider.class, WrongTypeErrorTypeProvider.class})
+    @Throws({ArgumentErrorTypeProvider.class, AllCommandsErrorTypeProvider.class, WrongTypeErrorTypeProvider.class})
     public void geoadd(@Connection LettuceRedisConnection connection,
                        String key,
                        List<GeospatialItem> items,
