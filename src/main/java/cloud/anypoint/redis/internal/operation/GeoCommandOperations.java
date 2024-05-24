@@ -2,20 +2,19 @@ package cloud.anypoint.redis.internal.operation;
 
 import static cloud.anypoint.redis.internal.util.ErrorDecorator.mapErrors;
 
-import cloud.anypoint.redis.api.GeoLocation;
-import cloud.anypoint.redis.api.GeospatialItem;
+import cloud.anypoint.redis.api.geospatial.DistanceUnit;
+import cloud.anypoint.redis.api.geospatial.GeoLocation;
+import cloud.anypoint.redis.api.geospatial.GeospatialItem;
 import cloud.anypoint.redis.internal.connection.LettuceRedisConnection;
 import cloud.anypoint.redis.internal.exception.ArgumentException;
 import cloud.anypoint.redis.internal.metadata.ArgumentErrorTypeProvider;
 import cloud.anypoint.redis.internal.metadata.AllCommandsErrorTypeProvider;
 import cloud.anypoint.redis.internal.metadata.WrongTypeErrorTypeProvider;
-import io.lettuce.core.GeoAddArgs;
-import io.lettuce.core.GeoCoordinates;
-import io.lettuce.core.GeoValue;
-import io.lettuce.core.Value;
+import io.lettuce.core.*;
 import org.mule.runtime.extension.api.annotation.error.Throws;
 import org.mule.runtime.extension.api.annotation.param.Connection;
 import org.mule.runtime.extension.api.annotation.param.Content;
+import org.mule.runtime.extension.api.annotation.param.NullSafe;
 import org.mule.runtime.extension.api.annotation.param.Optional;
 import org.mule.runtime.extension.api.annotation.param.display.DisplayName;
 import org.mule.runtime.extension.api.runtime.operation.Result;
@@ -72,6 +71,37 @@ public class GeoCommandOperations {
                 .collectList();
         mapErrors(cmd, "GEOPOS").subscribe(
             result -> callback.success(Result.<List<GeoLocation>, Void>builder()
+                .output(result)
+                .build()),
+            callback::error);
+    }
+
+    @DisplayName("GEODIST")
+    @Throws({AllCommandsErrorTypeProvider.class, WrongTypeErrorTypeProvider.class})
+    public void geodist(@Connection LettuceRedisConnection connection,
+                        String key,
+                        String member1,
+                        String member2,
+                        @Optional(defaultValue = "M") DistanceUnit unit,
+                        CompletionCallback<Double, Void> callback) {
+        LOGGER.debug("GEODIST {} {} {}", key, member1, member2);
+        GeoArgs.Unit unitArg = GeoArgs.Unit.m;
+        switch (unit) {
+            case M:
+                unitArg = GeoArgs.Unit.m;
+            break;
+            case KM:
+                unitArg = GeoArgs.Unit.km;
+            break;
+            case MI:
+                unitArg = GeoArgs.Unit.mi;
+            break;
+            case FT:
+                unitArg = GeoArgs.Unit.ft;
+        }
+        Mono<Double> cmd = connection.commands().geodist(key, member1, member2, unitArg);
+        mapErrors(cmd, "GEODIST", key).subscribe(
+            result -> callback.success(Result.<Double, Void>builder()
                 .output(result)
                 .build()),
             callback::error);

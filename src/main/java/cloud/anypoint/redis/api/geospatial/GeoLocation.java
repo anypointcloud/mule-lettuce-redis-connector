@@ -1,4 +1,4 @@
-package cloud.anypoint.redis.api;
+package cloud.anypoint.redis.api.geospatial;
 
 public class GeoLocation {
     private double longitude;
