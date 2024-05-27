@@ -2,20 +2,22 @@ package cloud.anypoint.redis.internal.operation;
 
 import static cloud.anypoint.redis.internal.util.ErrorDecorator.mapErrors;
 
-import cloud.anypoint.redis.api.geospatial.DistanceUnit;
-import cloud.anypoint.redis.api.geospatial.GeoLocation;
-import cloud.anypoint.redis.api.geospatial.GeospatialItem;
+import cloud.anypoint.redis.api.SortOrder;
+import cloud.anypoint.redis.api.geospatial.*;
 import cloud.anypoint.redis.internal.connection.LettuceRedisConnection;
 import cloud.anypoint.redis.internal.exception.ArgumentException;
 import cloud.anypoint.redis.internal.metadata.ArgumentErrorTypeProvider;
 import cloud.anypoint.redis.internal.metadata.AllCommandsErrorTypeProvider;
+import cloud.anypoint.redis.internal.metadata.GeoSearchOutputTypeResolver;
 import cloud.anypoint.redis.internal.metadata.WrongTypeErrorTypeProvider;
 import io.lettuce.core.*;
+import org.mule.runtime.api.meta.ExpressionSupport;
+import org.mule.runtime.extension.api.annotation.Expression;
+import org.mule.runtime.extension.api.annotation.dsl.xml.ParameterDsl;
 import org.mule.runtime.extension.api.annotation.error.Throws;
-import org.mule.runtime.extension.api.annotation.param.Connection;
-import org.mule.runtime.extension.api.annotation.param.Content;
-import org.mule.runtime.extension.api.annotation.param.NullSafe;
-import org.mule.runtime.extension.api.annotation.param.Optional;
+import org.mule.runtime.extension.api.annotation.metadata.MetadataKeyId;
+import org.mule.runtime.extension.api.annotation.metadata.OutputResolver;
+import org.mule.runtime.extension.api.annotation.param.*;
 import org.mule.runtime.extension.api.annotation.param.display.DisplayName;
 import org.mule.runtime.extension.api.runtime.operation.Result;
 import org.mule.runtime.extension.api.runtime.process.CompletionCallback;
@@ -105,5 +107,31 @@ public class GeoCommandOperations {
                 .output(result)
                 .build()),
             callback::error);
+    }
+
+    @DisplayName("GEOSEARCH")
+    @OutputResolver(output = GeoSearchOutputTypeResolver.class)
+    @Throws({ArgumentErrorTypeProvider.class, AllCommandsErrorTypeProvider.class, WrongTypeErrorTypeProvider.class})
+    public void geosearch(@Connection LettuceRedisConnection connection,
+                          String key,
+                          @DisplayName("FROMMEMBER") @Optional String fromMember,
+                          @DisplayName("FROMLONLAT") @Optional GeoLocation fromLocation,
+                          @DisplayName("BYRADIUS") @Optional ByRadiusOption byRadius,
+                          @DisplayName("BYBOX") @Optional ByBoxOption byBox,
+                          SortOrder sortOrder,
+                          @DisplayName("COUNT") @Optional Integer count,
+                          @DisplayName("ANY") @Optional boolean countAny,
+                          @MetadataKeyId @ParameterGroup(name = "Result options") GeoSearchResultOption searchResultOptions,
+                          CompletionCallback<List, Void> callback) {
+        if (null == fromMember && null == fromLocation) {
+            callback.error(new ArgumentException("GEOSEARCH", new IllegalArgumentException("At least one of FROMMEMBER or FROMLONLAT is required")));
+            return;
+        }
+        if (null != fromMember && null != fromLocation) {
+            callback.error(new ArgumentException("GEOSEARCH", new IllegalArgumentException("Only one of FROMMEMBER or FROMLATLON may be provided")));
+            return;
+        }
+
+        callback.error(new ArgumentException("GEOSEARCH", new IllegalArgumentException("not implemented yet do not use this operation")));
     }
 }

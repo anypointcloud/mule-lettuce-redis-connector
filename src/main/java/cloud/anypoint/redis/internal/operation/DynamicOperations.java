@@ -34,14 +34,13 @@ public class DynamicOperations {
                             CompletionCallback<Object, Void> callback) {
         LOGGER.debug("dynamic command {} with args {}", command, arguments);
         mapErrors(connection.customCommands().dynamic(command, arguments, returnType), command, String.join(" ", arguments))
-                // TODO: add validator parameter to control whether we throw NilValueException
-                .switchIfEmpty(Mono.error(new NilValueException(command)))
-                .subscribe(
-                        (result) -> callback.success(
-                                Result.<Object, Void>builder()
-                                        .output(result)
-                                        .build()),
-                        callback::error
-                );
+            // TODO: add validator parameter to control whether we throw NilValueException
+            .switchIfEmpty(Mono.error(new NilValueException(command)))
+            .subscribe(
+                result -> callback.success(
+                    Result.<Object, Void>builder()
+                        .output(result)
+                        .build()),
+                callback::error);
     }
 }
