@@ -1,6 +1,7 @@
 package cloud.anypoint.redis.internal.operation;
 
 import static cloud.anypoint.redis.internal.util.ErrorDecorator.mapErrors;
+import static org.mule.runtime.api.meta.ExpressionSupport.NOT_SUPPORTED;
 
 import cloud.anypoint.redis.api.SortOrder;
 import cloud.anypoint.redis.api.geospatial.*;
@@ -11,7 +12,6 @@ import cloud.anypoint.redis.internal.metadata.AllCommandsErrorTypeProvider;
 import cloud.anypoint.redis.internal.metadata.GeoSearchOutputTypeResolver;
 import cloud.anypoint.redis.internal.metadata.WrongTypeErrorTypeProvider;
 import io.lettuce.core.*;
-import org.mule.runtime.api.meta.ExpressionSupport;
 import org.mule.runtime.extension.api.annotation.Expression;
 import org.mule.runtime.extension.api.annotation.dsl.xml.ParameterDsl;
 import org.mule.runtime.extension.api.annotation.error.Throws;
@@ -19,6 +19,7 @@ import org.mule.runtime.extension.api.annotation.metadata.MetadataKeyId;
 import org.mule.runtime.extension.api.annotation.metadata.OutputResolver;
 import org.mule.runtime.extension.api.annotation.param.*;
 import org.mule.runtime.extension.api.annotation.param.display.DisplayName;
+import org.mule.runtime.extension.api.annotation.param.display.Placement;
 import org.mule.runtime.extension.api.runtime.operation.Result;
 import org.mule.runtime.extension.api.runtime.process.CompletionCallback;
 import org.slf4j.Logger;
@@ -114,23 +115,14 @@ public class GeoCommandOperations {
     @Throws({ArgumentErrorTypeProvider.class, AllCommandsErrorTypeProvider.class, WrongTypeErrorTypeProvider.class})
     public void geosearch(@Connection LettuceRedisConnection connection,
                           String key,
-                          @DisplayName("FROMMEMBER") @Optional String fromMember,
-                          @DisplayName("FROMLONLAT") @Optional GeoLocation fromLocation,
-                          @DisplayName("BYRADIUS") @Optional ByRadiusOption byRadius,
-                          @DisplayName("BYBOX") @Optional ByBoxOption byBox,
+                          @ParameterDsl(allowReferences = false) @Expression(NOT_SUPPORTED) GeoSearchCenter searchCenter,
+                          @ParameterDsl(allowReferences = false) @Expression(NOT_SUPPORTED) GeoSearchBy searchBy,
                           SortOrder sortOrder,
                           @DisplayName("COUNT") @Optional Integer count,
                           @DisplayName("ANY") @Optional boolean countAny,
-                          @MetadataKeyId @ParameterGroup(name = "Result options") GeoSearchResultOption searchResultOptions,
+                          @MetadataKeyId @ParameterGroup(name = "Result options") @Placement(tab = "Return")
+                              GeoSearchResultOption searchResultOptions,
                           CompletionCallback<List, Void> callback) {
-        if (null == fromMember && null == fromLocation) {
-            callback.error(new ArgumentException("GEOSEARCH", new IllegalArgumentException("At least one of FROMMEMBER or FROMLONLAT is required")));
-            return;
-        }
-        if (null != fromMember && null != fromLocation) {
-            callback.error(new ArgumentException("GEOSEARCH", new IllegalArgumentException("Only one of FROMMEMBER or FROMLATLON may be provided")));
-            return;
-        }
 
         callback.error(new ArgumentException("GEOSEARCH", new IllegalArgumentException("not implemented yet do not use this operation")));
     }

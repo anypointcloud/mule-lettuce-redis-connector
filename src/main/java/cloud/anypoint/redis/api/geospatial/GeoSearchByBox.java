@@ -1,9 +1,18 @@
 package cloud.anypoint.redis.api.geospatial;
 
-public class ByBoxOption {
+import org.mule.runtime.extension.api.annotation.param.Parameter;
+import org.mule.runtime.extension.api.annotation.param.display.Placement;
+
+public class GeoSearchByBox implements GeoSearchBy {
+    @Placement(order = 1)
+    @Parameter
     private double width;
+    @Placement(order = 2)
+    @Parameter
     private double height;
 
+    @Placement(order = 3)
+    @Parameter
     private DistanceUnit unit;
 
     public double getWidth() {
