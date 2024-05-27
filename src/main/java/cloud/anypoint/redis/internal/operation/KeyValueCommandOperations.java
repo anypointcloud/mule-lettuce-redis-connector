@@ -11,6 +11,7 @@ import cloud.anypoint.redis.internal.metadata.AllCommandsErrorTypeProvider;
 import cloud.anypoint.redis.internal.metadata.WrongTypeErrorTypeProvider;
 import io.lettuce.core.*;
 import org.mule.runtime.core.api.util.StringUtils;
+import org.mule.runtime.extension.api.annotation.dsl.xml.ParameterDsl;
 import org.mule.runtime.extension.api.annotation.error.Throws;
 import org.mule.runtime.extension.api.annotation.param.Connection;
 import org.mule.runtime.extension.api.annotation.param.Content;
@@ -217,7 +218,7 @@ public class KeyValueCommandOperations {
     @DisplayName("MGET")
     @Throws({ArgumentErrorTypeProvider.class, AllCommandsErrorTypeProvider.class})
     public void mget(@Connection LettuceRedisConnection connection,
-                     List<String> keys,
+                     @ParameterDsl(allowReferences = false) List<String> keys,
                      CompletionCallback<List<String>, Void> callback) {
         LOGGER.debug("MGET {}", keys);
         try {
