@@ -1,5 +1,6 @@
 package cloud.anypoint.redis.api.geospatial;
 
+import io.lettuce.core.GeoSearch;
 import org.mule.runtime.extension.api.annotation.param.Parameter;
 import org.mule.runtime.extension.api.annotation.param.display.Placement;
 
@@ -37,5 +38,10 @@ public class GeoSearchByBox implements GeoSearchBy {
 
     public void setUnit(DistanceUnit unit) {
         this.unit = unit;
+    }
+
+    @Override
+    public GeoSearch.GeoPredicate getPredicate() {
+        return GeoSearch.byBox(getWidth(), getHeight(), getUnit().getLettuceUnit());
     }
 }

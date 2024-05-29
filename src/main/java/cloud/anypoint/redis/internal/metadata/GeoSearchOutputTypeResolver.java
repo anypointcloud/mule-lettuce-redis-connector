@@ -19,6 +19,7 @@ public class GeoSearchOutputTypeResolver implements TypeKeysResolver, OutputType
     public MetadataType getOutputType(MetadataContext metadataContext, GeoSearchResultOption option) throws MetadataResolvingException, ConnectionException {
         if (option.isWithCoord() || option.isWithDist() || option.isWithHash()) {
             ObjectTypeBuilder itemType = metadataContext.getTypeBuilder().objectType();
+            itemType.addField().key("member").value(metadataContext.getTypeBuilder().stringType());
             if (option.isWithCoord()) {
                 itemType.addField().key("latitude").value(metadataContext.getTypeBuilder().numberType());
                 itemType.addField().key("longitude").value(metadataContext.getTypeBuilder().numberType());

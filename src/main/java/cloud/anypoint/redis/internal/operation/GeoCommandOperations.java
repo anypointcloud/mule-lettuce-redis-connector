@@ -27,7 +27,9 @@ import org.slf4j.LoggerFactory;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Stream;
 
 public class GeoCommandOperations {
@@ -123,7 +125,51 @@ public class GeoCommandOperations {
                           @MetadataKeyId @ParameterGroup(name = "Result options") @Placement(tab = "Return")
                               GeoSearchResultOption searchResultOptions,
                           CompletionCallback<List, Void> callback) {
-
-        callback.error(new ArgumentException("GEOSEARCH", new IllegalArgumentException("not implemented yet do not use this operation")));
+        GeoArgs args = new GeoArgs();
+        switch (sortOrder) {
+            case ASC:
+                args = args.asc();
+                break;
+            case DESC:
+                args = args.desc();
+                break;
+        }
+        if (null != count) {
+            args = args.withCount(count, countAny);
+        }
+        if (searchResultOptions.isWithCoord()) {
+            args = args.withCoordinates();
+        }
+        if (searchResultOptions.isWithDist()) {
+            args = args.withDistance();
+        }
+        if (searchResultOptions.isWithHash()) {
+            args = args.withHash();
+        }
+        Flux<GeoWithin<String>> baseCmd = connection.commands().geosearch(key, searchCenter.reference(), searchBy.getPredicate(), args);
+        Flux<Object> cmd = baseCmd.map( result -> {
+            if (searchResultOptions.hasDetails()) {
+                Map<String, Object> details = new HashMap<>();
+                details.put("member", result.getMember());
+                if (searchResultOptions.isWithCoord()) {
+                    details.put("longitude", result.getCoordinates().getX());
+                    details.put("latitude", result.getCoordinates().getY());
+                }
+                if (searchResultOptions.isWithDist()) {
+                    details.put("distance", result.getDistance());
+                }
+                if (searchResultOptions.isWithHash()) {
+                    details.put("hash", result.getGeohash());
+                }
+                return details;
+            } else {
+                return result.getMember();
+            }
+        });
+        mapErrors(cmd.collectList(), "GEOSEARCH", key).subscribe(
+            result -> callback.success(Result.<List, Void>builder()
+                .output(result)
+                .build()),
+            callback::error);
     }
 }

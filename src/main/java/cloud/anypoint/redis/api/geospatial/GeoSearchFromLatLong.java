@@ -1,5 +1,6 @@
 package cloud.anypoint.redis.api.geospatial;
 
+import io.lettuce.core.GeoSearch;
 import org.mule.runtime.extension.api.annotation.Alias;
 
 @Alias("fromLatLong")
@@ -21,5 +22,10 @@ public class GeoSearchFromLatLong implements GeoSearchCenter {
 
     public void setLongitude(double longitude) {
         this.longitude = longitude;
+    }
+
+    @Override
+    public GeoSearch.GeoRef<String> reference() {
+        return GeoSearch.fromCoordinates(getLongitude(), getLatitude());
     }
 }

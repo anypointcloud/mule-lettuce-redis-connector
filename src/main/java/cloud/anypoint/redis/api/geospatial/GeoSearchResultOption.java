@@ -37,4 +37,8 @@ public class GeoSearchResultOption {
     public void setWithHash(boolean withHash) {
         this.withHash = withHash;
     }
+
+    public boolean hasDetails() {
+        return isWithHash() || isWithDist() || isWithCoord();
+    }
 }
