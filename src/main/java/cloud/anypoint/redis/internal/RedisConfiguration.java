@@ -6,7 +6,17 @@ import org.mule.runtime.extension.api.annotation.Operations;
 import org.mule.runtime.extension.api.annotation.connectivity.ConnectionProviders;
 
 //https://lettuce.io/core/release/reference/#getting-started.start-coding
-@Operations({ChannelCommandOperations.class, DynamicOperations.class, GeoCommandOperations.class, SearchOperations.class, HashCommandOperations.class, KeyValueCommandOperations.class, SetCommandOperations.class, ListCommandOperations.class, SortedSetCommandOperations.class})
+@Operations({
+        ChannelCommandOperations.class,
+        DynamicOperations.class,
+        GeoCommandOperations.class,
+        ListCommandOperations.class,
+        HashCommandOperations.class,
+        KeyValueCommandOperations.class,
+        SearchOperations.class,
+        SetCommandOperations.class,
+        SortedSetCommandOperations.class,
+        StreamCommandOperations.class})
 @ConnectionProviders({LettuceRedisConnectionProvider.class})
 public class RedisConfiguration {
 

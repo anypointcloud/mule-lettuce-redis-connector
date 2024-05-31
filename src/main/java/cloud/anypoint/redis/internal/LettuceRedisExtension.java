@@ -5,6 +5,9 @@ import static org.mule.sdk.api.meta.JavaVersion.JAVA_8;
 
 import cloud.anypoint.redis.api.error.ConnectorError;
 import cloud.anypoint.redis.api.geospatial.*;
+import cloud.anypoint.redis.api.stream.MaxLenEvictionOption;
+import cloud.anypoint.redis.api.stream.MinIdEvictionOption;
+import cloud.anypoint.redis.api.stream.StreamEvictionOption;
 import org.mule.runtime.extension.api.annotation.Configurations;
 import org.mule.runtime.extension.api.annotation.Extension;
 import org.mule.runtime.extension.api.annotation.SubTypeMapping;
@@ -19,6 +22,6 @@ import org.mule.sdk.api.annotation.JavaVersionSupport;
 @ErrorTypes(ConnectorError.class)
 @SubTypeMapping(baseType = GeoSearchBy.class, subTypes = {GeoSearchByBox.class, GeoSearchByRadius.class})
 @SubTypeMapping(baseType = GeoSearchCenter.class, subTypes = {GeoSearchFromMember.class, GeoSearchFromLatLong.class})
+@SubTypeMapping(baseType = StreamEvictionOption.class, subTypes = {MaxLenEvictionOption.class, MinIdEvictionOption.class})
 public class LettuceRedisExtension {
-
 }

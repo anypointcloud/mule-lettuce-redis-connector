@@ -31,6 +31,7 @@ public class ListCommandOperations {
                       String key,
                       @Content List<String> members,
                       CompletionCallback<Long, Void> callback) {
+        LOGGER.debug("LPUSH {}", key);
         try {
             mapErrors(connection.commands().lpush(key, members.stream().toArray(String[]::new)), "LPUSH", key)
                     .subscribe(
@@ -52,6 +53,7 @@ public class ListCommandOperations {
                      String key,
                      @MetadataKeyId @Optional Integer count,
                      CompletionCallback<Object, Void> callback) {
+        LOGGER.debug("LPOP {}", key);
         Mono<Object> cmd = connection.commands().lpop(key).map(val -> Arrays.asList(val));
         if (null != count) {
 //            if (count < 0)
