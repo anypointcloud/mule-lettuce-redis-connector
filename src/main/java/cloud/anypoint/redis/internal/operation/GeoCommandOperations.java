@@ -125,6 +125,7 @@ public class GeoCommandOperations {
                           @MetadataKeyId @ParameterGroup(name = "Result options") @Placement(tab = "Return")
                               GeoSearchResultOption searchResultOptions,
                           CompletionCallback<List, Void> callback) {
+        LOGGER.debug("GEOSEARCH {}", key);
         GeoArgs args = new GeoArgs();
         switch (sortOrder) {
             case ASC:

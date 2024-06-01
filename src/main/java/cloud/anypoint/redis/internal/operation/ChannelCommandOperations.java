@@ -20,6 +20,7 @@ public class ChannelCommandOperations {
                         String channel,
                         String message,
                         CompletionCallback<Long, Void> callback) {
+        LOGGER.debug("PUBLISH {}", channel);
         mapErrors(connection.commands().publish(channel, message), "PUBLISH", channel)
             .subscribe(
                 result -> callback.success(Result.<Long, Void>builder()
