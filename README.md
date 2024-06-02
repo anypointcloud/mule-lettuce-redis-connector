@@ -24,6 +24,9 @@ The Send Command operation allows a developer to send any arbitrary command and 
 
 ### Commands
 
+#### Server Commands
+* `PING`
+
 #### Key Value Commands
 * `APPEND`
 * `COPY`
@@ -45,7 +48,6 @@ The Send Command operation allows a developer to send any arbitrary command and 
 * `TTL`
 
 #### Hash Commands
-
 * `HEXISTS`
 * `HGET`
 * `HGETALL`
@@ -55,12 +57,10 @@ The Send Command operation allows a developer to send any arbitrary command and 
 * `HSET`
 
 #### List Commands
-
 * `LPOP`
 * `LPUSH`
 
 #### Set Commands
-
 * `SADD`
 * `SCARD`
 * `SDIFF`
@@ -73,29 +73,24 @@ The Send Command operation allows a developer to send any arbitrary command and 
 * `SSCAN`
 
 #### Sorted Set Commands
-
 * `ZADD`
 * `ZRANK`
 * `ZSCORE`
 
 #### Geospatial Commands
-
 * `GEOADD`
 * `GEODIST`
 * `GEOPOS`
 * `GEOSEARCH`
 
 #### Channel Commands
-
 * `PUBLISH`
 
 #### Stream Commands
-
 * `XADD`
 * `XREAD`
 
 ### Sources
-
 * `SUBSCRIBE`
 * `PSUBSCRIBE`
 

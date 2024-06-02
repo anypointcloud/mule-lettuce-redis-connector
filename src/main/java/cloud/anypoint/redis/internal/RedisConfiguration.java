@@ -14,6 +14,7 @@ import org.mule.runtime.extension.api.annotation.connectivity.ConnectionProvider
         HashCommandOperations.class,
         KeyValueCommandOperations.class,
         SearchOperations.class,
+        ServerCommandOperations.class,
         SetCommandOperations.class,
         SortedSetCommandOperations.class,
         StreamCommandOperations.class})
