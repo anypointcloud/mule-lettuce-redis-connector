@@ -10,13 +10,12 @@ import cloud.anypoint.redis.internal.metadata.NilErrorTypeProvider;
 import cloud.anypoint.redis.internal.metadata.AllCommandsErrorTypeProvider;
 import cloud.anypoint.redis.internal.metadata.WrongTypeErrorTypeProvider;
 import io.lettuce.core.*;
+import org.mule.runtime.api.meta.ExpressionSupport;
 import org.mule.runtime.core.api.util.StringUtils;
+import org.mule.runtime.extension.api.annotation.Expression;
 import org.mule.runtime.extension.api.annotation.dsl.xml.ParameterDsl;
 import org.mule.runtime.extension.api.annotation.error.Throws;
-import org.mule.runtime.extension.api.annotation.param.Connection;
-import org.mule.runtime.extension.api.annotation.param.Content;
-import org.mule.runtime.extension.api.annotation.param.MediaType;
-import org.mule.runtime.extension.api.annotation.param.Optional;
+import org.mule.runtime.extension.api.annotation.param.*;
 import org.mule.runtime.extension.api.annotation.param.display.DisplayName;
 import org.mule.runtime.extension.api.runtime.operation.Result;
 import org.mule.runtime.extension.api.runtime.process.CompletionCallback;
@@ -158,7 +157,7 @@ public class KeyValueCommandOperations {
 
     @DisplayName("GET")
     @MediaType(value = MediaType.TEXT_PLAIN, strict = false)
-    @Throws({NilErrorTypeProvider.class, WrongTypeErrorTypeProvider.class, AllCommandsErrorTypeProvider.class})
+    @Throws({NilErrorTypeProvider.class, AllCommandsErrorTypeProvider.class})
     public void get(@Connection LettuceRedisConnection connection,
                     String key,
                     CompletionCallback<String, Void> callback) {
@@ -213,6 +212,56 @@ public class KeyValueCommandOperations {
                     .build()),
                 callback::error
             );
+    }
+
+    @DisplayName("GETEX")
+    @MediaType(value = MediaType.TEXT_PLAIN, strict = false)
+    @Throws({NilErrorTypeProvider.class, AllCommandsErrorTypeProvider.class})
+    public void getex(@Connection LettuceRedisConnection connection,
+                      String key,
+                      @DisplayName("EX") @Optional Long ex,
+                      @DisplayName("PX") @Optional Long px,
+                      @DisplayName("EXAT") @Optional Long exat,
+                      @DisplayName("PXAT") @Optional Long pxat,
+                      @DisplayName("PERSIST") @Optional boolean persist,
+                      CompletionCallback<String, Void> callback) {
+        LOGGER.debug("GETEX {}", key);
+        GetExArgs args = new GetExArgs();
+        int exclusiveArgCount = 0;
+        if (null != ex) {
+            args = args.ex(ex);
+            exclusiveArgCount++;
+        }
+        if (null != px) {
+            args = args.px(px);
+            exclusiveArgCount++;
+        }
+        if (null != exat) {
+            args = args.exAt(exat);
+            exclusiveArgCount++;
+        }
+        if (null != pxat) {
+            args = args.pxAt(pxat);
+            exclusiveArgCount++;
+        }
+        if (persist) {
+            args = args.persist();
+            exclusiveArgCount++;
+        }
+        if (exclusiveArgCount > 1) {
+            callback.error(new ArgumentException("GETEX", new IllegalArgumentException("only one of EX, PX, EXAT, PXAT, or PERSIST is supported")));
+            return;
+        }
+
+        Mono<String> cmd = connection.commands().getex(key, args);
+        mapErrors(cmd, "GETEX", key)
+            // TODO: Add validator parameter to make this optional
+            .switchIfEmpty(Mono.error(new NilValueException("GETEX", key)))
+            .subscribe(
+                result -> callback.success(Result.<String, Void>builder()
+                    .output(result)
+                    .build()),
+                callback::error);
     }
 
     @DisplayName("MGET")
@@ -412,4 +461,6 @@ public class KeyValueCommandOperations {
                 callback::error
             );
     }
+
+
 }
