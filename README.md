@@ -35,6 +35,7 @@ The Send Command operation allows a developer to send any arbitrary command and 
 * `EXPIRE`
 * `GET`
 * `GETDEL`
+* `GETEX`
 * `GETRANGE`
 * `GETSET`
 * `INCR`
@@ -59,6 +60,7 @@ The Send Command operation allows a developer to send any arbitrary command and 
 #### List Commands
 * `LPOP`
 * `LPUSH`
+* `LSET`
 
 #### Set Commands
 * `SADD`

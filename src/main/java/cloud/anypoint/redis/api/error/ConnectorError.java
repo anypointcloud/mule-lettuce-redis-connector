@@ -8,7 +8,8 @@ public enum ConnectorError implements ErrorTypeDefinition<ConnectorError> {
     SYNTAX,
     ARGUMENT(SYNTAX),
     NIL,
-    WRONGTYPE,
+    WRONG_TYPE,
+    OUT_OF_RANGE,
     TIMEOUT;
 
     private ErrorTypeDefinition<? extends Enum<?>> parent;

@@ -3,10 +3,9 @@ package cloud.anypoint.redis.internal.operation;
 import static cloud.anypoint.redis.internal.util.ErrorDecorator.mapErrors;
 import cloud.anypoint.redis.internal.connection.LettuceRedisConnection;
 import cloud.anypoint.redis.internal.exception.ArgumentException;
-import cloud.anypoint.redis.internal.metadata.ArgumentErrorTypeProvider;
-import cloud.anypoint.redis.internal.metadata.OptionalCountOutputTypeResolver;
-import cloud.anypoint.redis.internal.metadata.AllCommandsErrorTypeProvider;
-import cloud.anypoint.redis.internal.metadata.WrongTypeErrorTypeProvider;
+import cloud.anypoint.redis.internal.exception.OutOfRangeException;
+import cloud.anypoint.redis.internal.metadata.*;
+import io.lettuce.core.RedisCommandExecutionException;
 import org.mule.runtime.extension.api.annotation.error.Throws;
 import org.mule.runtime.extension.api.annotation.metadata.MetadataKeyId;
 import org.mule.runtime.extension.api.annotation.metadata.OutputResolver;
@@ -64,5 +63,21 @@ public class ListCommandOperations {
                     .output(result)
                     .build()),
             callback::error);
+    }
+
+    @DisplayName("LSET")
+    @Throws({AllCommandsErrorTypeProvider.class, OutOfRangeErrorTypeProvider.class, WrongTypeErrorTypeProvider.class})
+    public void lset(@Connection LettuceRedisConnection connection,
+                     String key,
+                     Long index,
+                     @Content String element,
+                     CompletionCallback<Void, Void> callback) {
+        LOGGER.debug("LSET {}", key);
+        Mono<String> cmd = connection.commands().lset(key, index, element);
+        mapErrors(cmd, "LSET", key)
+            .onErrorMap(RedisCommandExecutionException.class, OutOfRangeException::new)
+            .subscribe(
+                result -> callback.success(Result.<Void, Void>builder().build()),
+                callback::error);
     }
 }
