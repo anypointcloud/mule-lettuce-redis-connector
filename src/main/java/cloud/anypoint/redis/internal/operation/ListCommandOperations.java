@@ -33,14 +33,33 @@ public class ListCommandOperations {
         LOGGER.debug("LPUSH {}", key);
         try {
             mapErrors(connection.commands().lpush(key, members.stream().toArray(String[]::new)), "LPUSH", key)
-                    .subscribe(
-                        result -> callback.success(Result.<Long, Void>builder()
-                            .output(result)
-                            .build()),
-                        callback::error);
+                .subscribe(
+                    result -> callback.success(Result.<Long, Void>builder()
+                        .output(result)
+                        .build()),
+                    callback::error);
         }
         catch (IllegalArgumentException e) {
             callback.error(new ArgumentException("LPUSH", e));
+        }
+    }
+
+    @DisplayName("RPUSH")
+    @Throws({AllCommandsErrorTypeProvider.class, WrongTypeErrorTypeProvider.class, ArgumentErrorTypeProvider.class})
+    public void rpush(@Connection LettuceRedisConnection connection,
+                      String key,
+                      @Content List<String> members,
+                      CompletionCallback<Long, Void> callback) {
+        LOGGER.debug("RPUSH {}", key);
+        try {
+            mapErrors(connection.commands().rpush(key, members.stream().toArray(String[]::new)), "RPUSH", key)
+                .subscribe(
+                    result -> callback.success(Result.<Long, Void>builder()
+                        .output(result)
+                        .build()),
+                    callback::error);
+        } catch (IllegalArgumentException e) {
+            callback.error(new ArgumentException("RPUSH", e));
         }
     }
 
@@ -55,13 +74,32 @@ public class ListCommandOperations {
         LOGGER.debug("LPOP {}", key);
         Mono<Object> cmd = connection.commands().lpop(key).map(val -> Arrays.asList(val));
         if (null != count) {
-//            if (count < 0)
             cmd = connection.commands().lpop(key, count).collectList().map(Function.identity());
         }
         mapErrors(cmd, "LPOP", key).subscribe(
             result -> callback.success(Result.<Object, Void>builder()
-                    .output(result)
-                    .build()),
+                .output(result)
+                .build()),
+            callback::error);
+    }
+
+    @DisplayName("RPOP")
+    @MediaType(value = "application/java", strict = true)
+    @OutputResolver(output = OptionalCountOutputTypeResolver.class)
+    @Throws({AllCommandsErrorTypeProvider.class, WrongTypeErrorTypeProvider.class})
+    public void rpop(@Connection LettuceRedisConnection connection,
+                     String key,
+                     @MetadataKeyId @Optional Integer count,
+                     CompletionCallback<Object, Void> callback) {
+        LOGGER.debug("RPOP {}", key);
+        Mono<Object> cmd = connection.commands().rpop(key).map(val -> Arrays.asList(val));
+        if (null != count) {
+            cmd = connection.commands().rpop(key, count).collectList().map(Function.identity());
+        }
+        mapErrors(cmd, "RPOP", key).subscribe(
+            result -> callback.success(Result.<Object, Void>builder()
+                .output(result)
+                .build()),
             callback::error);
     }
 

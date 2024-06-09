@@ -61,6 +61,8 @@ The Send Command operation allows a developer to send any arbitrary command and 
 * `LPOP`
 * `LPUSH`
 * `LSET`
+* `RPUSH`
+* `RPOP`
 
 #### Set Commands
 * `SADD`
