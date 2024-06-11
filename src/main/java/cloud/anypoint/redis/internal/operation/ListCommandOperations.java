@@ -4,8 +4,11 @@ import static cloud.anypoint.redis.internal.util.ErrorDecorator.mapErrors;
 import cloud.anypoint.redis.internal.connection.LettuceRedisConnection;
 import cloud.anypoint.redis.internal.exception.ArgumentException;
 import cloud.anypoint.redis.internal.exception.OutOfRangeException;
+import cloud.anypoint.redis.internal.exception.TimeoutException;
 import cloud.anypoint.redis.internal.metadata.*;
+import io.lettuce.core.KeyValue;
 import io.lettuce.core.RedisCommandExecutionException;
+import org.mule.runtime.extension.api.annotation.dsl.xml.ParameterDsl;
 import org.mule.runtime.extension.api.annotation.error.Throws;
 import org.mule.runtime.extension.api.annotation.metadata.MetadataKeyId;
 import org.mule.runtime.extension.api.annotation.metadata.OutputResolver;
@@ -18,7 +21,9 @@ import org.slf4j.LoggerFactory;
 import reactor.core.publisher.Mono;
 
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.function.Function;
 
 public class ListCommandOperations {
@@ -101,6 +106,50 @@ public class ListCommandOperations {
                 .output(result)
                 .build()),
             callback::error);
+    }
+
+    @DisplayName("BLPOP")
+    @Throws({AllCommandsErrorTypeProvider.class, ArgumentErrorTypeProvider.class, WrongTypeErrorTypeProvider.class})
+    public void blpop(@Connection LettuceRedisConnection connection,
+                      @ParameterDsl(allowReferences = false) List<String> keys,
+                      Double timeoutSeconds,
+                      CompletionCallback<Map<String, String>, Void> callback) {
+        LOGGER.debug("BLPOP {}", keys);
+        if (keys.isEmpty()) {
+            callback.error(new ArgumentException("BLPOP", new IllegalArgumentException("BLPOP requires at least one key")));
+            return;
+        }
+        Mono<Map<String, String>> cmd = connection.commands().blpop(timeoutSeconds, keys.stream().toArray(String[]::new))
+                .map(kv -> Collections.singletonMap(kv.getKey(), kv.getValue()));
+        mapErrors(cmd, "BLPOP")
+            .switchIfEmpty(Mono.error(new TimeoutException("BLPOP", timeoutSeconds)))
+            .subscribe(
+                result -> callback.success(Result.<Map<String, String>, Void>builder()
+                    .output(result)
+                    .build()),
+                callback::error);
+    }
+
+    @DisplayName("BRPOP")
+    @Throws({AllCommandsErrorTypeProvider.class, ArgumentErrorTypeProvider.class, WrongTypeErrorTypeProvider.class})
+    public void brpop(@Connection LettuceRedisConnection connection,
+                      @ParameterDsl(allowReferences = false) List<String> keys,
+                      Double timeoutSeconds,
+                      CompletionCallback<Map<String, String>, Void> callback) {
+        LOGGER.debug("BRPOP {}", keys);
+        if (keys.isEmpty()) {
+            callback.error(new ArgumentException("BRPOP", new IllegalArgumentException("BRPOP requires at least one key")));
+            return;
+        }
+        Mono<Map<String, String>> cmd = connection.commands().brpop(timeoutSeconds, keys.stream().toArray(String[]::new))
+                .map(kv -> Collections.singletonMap(kv.getKey(), kv.getValue()));
+        mapErrors(cmd, "BRPOP")
+            .switchIfEmpty(Mono.error(new TimeoutException("BRPOP", timeoutSeconds)))
+            .subscribe(
+                result -> callback.success(Result.<Map<String, String>, Void>builder()
+                    .output(result)
+                    .build()),
+                callback::error);
     }
 
     @DisplayName("LSET")
