@@ -7,12 +7,12 @@ import cloud.anypoint.redis.api.stream.StreamEvictionOption;
 import cloud.anypoint.redis.api.stream.StreamWatermark;
 import cloud.anypoint.redis.internal.connection.LettuceRedisConnection;
 import cloud.anypoint.redis.internal.exception.ArgumentException;
+import cloud.anypoint.redis.internal.exception.NilValueException;
 import cloud.anypoint.redis.internal.metadata.AllCommandsErrorTypeProvider;
 import cloud.anypoint.redis.internal.metadata.ArgumentErrorTypeProvider;
+import cloud.anypoint.redis.internal.metadata.NilErrorTypeProvider;
 import cloud.anypoint.redis.internal.metadata.WrongTypeErrorTypeProvider;
-import io.lettuce.core.StreamMessage;
-import io.lettuce.core.XAddArgs;
-import io.lettuce.core.XReadArgs;
+import io.lettuce.core.*;
 import org.mule.runtime.extension.api.annotation.Alias;
 import org.mule.runtime.extension.api.annotation.dsl.xml.ParameterDsl;
 import org.mule.runtime.extension.api.annotation.error.Throws;
@@ -29,10 +29,7 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.GroupedFlux;
 import reactor.core.publisher.Mono;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 
 public class StreamCommandOperations {
@@ -65,6 +62,28 @@ public class StreamCommandOperations {
                 .output(result)
                 .build()),
             callback::error);
+    }
+
+    @DisplayName("XRANGE")
+    @Throws({AllCommandsErrorTypeProvider.class, WrongTypeErrorTypeProvider.class, ArgumentErrorTypeProvider.class})
+    public void xrange(@Connection LettuceRedisConnection connection,
+                       String key,
+                       String start,
+                       String end,
+                       @Optional Integer count,
+                       CompletionCallback<Map<String, Map<String, String>>, Void> callback) {
+        Flux<StreamMessage<String, String>> baseCmd = connection.commands().xrange(key, Range.create(start, end));
+        if (null != count) {
+            baseCmd = connection.commands().xrange(key, Range.create(start, end), Limit.from(count));
+        }
+        Mono<Map<String, Map<String, String>>> cmd = baseCmd.collectMap(StreamMessage::getId, StreamMessage::getBody);
+        mapErrors(cmd, "XRANGE", key)
+            .switchIfEmpty(Mono.just(new HashMap<>()))
+            .subscribe(
+                result -> callback.success(Result.<Map<String, Map<String, String>>, Void>builder()
+                    .output(result)
+                    .build()),
+                callback::error);
     }
 
     @DisplayName("XREAD")
