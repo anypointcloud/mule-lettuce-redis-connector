@@ -94,7 +94,10 @@ The Send Command operation allows a developer to send any arbitrary command and 
 
 #### Stream Commands
 * `XADD`
+* `XDEL`
+* `XRANGE`
 * `XREAD`
+* `XTRIM`
 
 ### Sources
 * `SUBSCRIBE`
