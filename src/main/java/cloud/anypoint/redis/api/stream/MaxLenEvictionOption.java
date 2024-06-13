@@ -1,6 +1,7 @@
 package cloud.anypoint.redis.api.stream;
 
 import io.lettuce.core.XAddArgs;
+import io.lettuce.core.XTrimArgs;
 import org.mule.runtime.extension.api.annotation.param.Optional;
 import org.mule.runtime.extension.api.annotation.param.Parameter;
 import org.mule.runtime.extension.api.annotation.param.display.DisplayName;
@@ -48,6 +49,15 @@ public class MaxLenEvictionOption implements StreamEvictionOption {
     @Override
     public XAddArgs decorate(XAddArgs args) {
         XAddArgs modified = args.maxlen(maxLength).exactTrimming(exactTrimming);
+        if (null != limit) {
+            modified = modified.limit(limit);
+        }
+        return modified;
+    }
+
+    @Override
+    public XTrimArgs decorate(XTrimArgs args) {
+        XTrimArgs modified = args.maxlen(maxLength).exactTrimming(exactTrimming);
         if (null != limit) {
             modified = modified.limit(limit);
         }

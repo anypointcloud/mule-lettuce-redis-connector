@@ -13,7 +13,9 @@ import cloud.anypoint.redis.internal.metadata.ArgumentErrorTypeProvider;
 import cloud.anypoint.redis.internal.metadata.NilErrorTypeProvider;
 import cloud.anypoint.redis.internal.metadata.WrongTypeErrorTypeProvider;
 import io.lettuce.core.*;
+import org.mule.runtime.api.meta.ExpressionSupport;
 import org.mule.runtime.extension.api.annotation.Alias;
+import org.mule.runtime.extension.api.annotation.Expression;
 import org.mule.runtime.extension.api.annotation.dsl.xml.ParameterDsl;
 import org.mule.runtime.extension.api.annotation.error.Throws;
 import org.mule.runtime.extension.api.annotation.param.Connection;
@@ -125,6 +127,41 @@ public class StreamCommandOperations {
                         .output(resultMap)
                         .build());
             },
+            callback::error);
+    }
+
+    @DisplayName("XDEL")
+    @Throws({AllCommandsErrorTypeProvider.class, ArgumentErrorTypeProvider.class, WrongTypeErrorTypeProvider.class})
+    public void xdel(@Connection LettuceRedisConnection connection,
+                     String key,
+                     @ParameterDsl(allowReferences = false) List<String> ids,
+                     CompletionCallback<Long, Void> callback) {
+        LOGGER.debug("XDEL {}", key);
+        if (ids.isEmpty()) {
+            callback.error(new ArgumentException("XDEL", new IllegalArgumentException("at least one id is required")));
+            return;
+        }
+        Mono<Long> cmd = connection.commands().xdel(key, ids.stream().toArray(String[]::new));
+        mapErrors(cmd, "XDEL", key).subscribe(
+            result -> callback.success(Result.<Long, Void>builder()
+                .output(result)
+                .build()),
+            callback::error);
+    }
+
+    @DisplayName("XTRIM")
+    @Throws({AllCommandsErrorTypeProvider.class, WrongTypeErrorTypeProvider.class})
+    public void xtrim(@Connection LettuceRedisConnection connection,
+                      String key,
+                      @ParameterDsl(allowReferences = false) @Expression(ExpressionSupport.NOT_SUPPORTED) StreamEvictionOption evictionOption,
+                      CompletionCallback<Long, Void> callback) {
+        LOGGER.debug("XTRIM {}", key);
+        XTrimArgs args = evictionOption.decorate(new XTrimArgs());
+        Mono<Long> cmd = connection.commands().xtrim(key, args);
+        mapErrors(cmd, "XTRIM", key).subscribe(
+            result -> callback.success(Result.<Long, Void>builder()
+                .output(result)
+                .build()),
             callback::error);
     }
 }
