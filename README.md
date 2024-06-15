@@ -59,7 +59,9 @@ The Send Command operation allows a developer to send any arbitrary command and 
 
 #### List Commands
 * `BLPOP`
+* `BLMOVE`
 * `BRPOP`
+* `LMOVE`
 * `LPOP`
 * `LPUSH`
 * `LSET`

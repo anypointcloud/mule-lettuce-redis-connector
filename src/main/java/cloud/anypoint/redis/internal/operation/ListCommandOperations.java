@@ -1,12 +1,14 @@
 package cloud.anypoint.redis.internal.operation;
 
 import static cloud.anypoint.redis.internal.util.ErrorDecorator.mapErrors;
+
+import cloud.anypoint.redis.api.list.ListEnd;
 import cloud.anypoint.redis.internal.connection.LettuceRedisConnection;
 import cloud.anypoint.redis.internal.exception.ArgumentException;
 import cloud.anypoint.redis.internal.exception.OutOfRangeException;
 import cloud.anypoint.redis.internal.exception.TimeoutException;
 import cloud.anypoint.redis.internal.metadata.*;
-import io.lettuce.core.KeyValue;
+import io.lettuce.core.LMoveArgs;
 import io.lettuce.core.RedisCommandExecutionException;
 import org.mule.runtime.extension.api.annotation.dsl.xml.ParameterDsl;
 import org.mule.runtime.extension.api.annotation.error.Throws;
@@ -166,5 +168,58 @@ public class ListCommandOperations {
             .subscribe(
                 result -> callback.success(Result.<Void, Void>builder().build()),
                 callback::error);
+    }
+
+    @DisplayName("LMOVE")
+    @MediaType(value = "text/plain", strict = true)
+    @Throws({AllCommandsErrorTypeProvider.class, WrongTypeErrorTypeProvider.class})
+    public void lmove(@Connection LettuceRedisConnection connection,
+                      String source,
+                      String destination,
+                      ListEnd whereFrom,
+                      ListEnd whereTo,
+                      CompletionCallback<String, Void> callback) {
+        LOGGER.debug("LMOVE {} {}", source, destination);
+        LMoveArgs args = getCommandArgsLMove(whereFrom, whereTo);
+        Mono<String> cmd = connection.commands().lmove(source, destination, args);
+        mapErrors(cmd, "LMOVE").subscribe(
+            result -> callback.success(Result.<String, Void>builder()
+                .output(result)
+                .build()),
+            callback::error);
+    }
+
+    @DisplayName("BLMOVE")
+    @MediaType(value = "text/plain", strict = true)
+    @Throws({AllCommandsErrorTypeProvider.class, WrongTypeErrorTypeProvider.class})
+    public void blmove(@Connection LettuceRedisConnection connection,
+                      String source,
+                      String destination,
+                      ListEnd whereFrom,
+                      ListEnd whereTo,
+                      Double timeout,
+                      CompletionCallback<String, Void> callback) {
+        LOGGER.debug("BLMOVE {} {}", source, destination);
+        LMoveArgs args = getCommandArgsLMove(whereFrom, whereTo);
+        Mono<String> cmd = connection.commands().blmove(source, destination, args, timeout);
+        mapErrors(cmd, "BLMOVE").subscribe(
+                result -> callback.success(Result.<String, Void>builder()
+                        .output(result)
+                        .build()),
+                callback::error);
+    }
+
+    private static LMoveArgs getCommandArgsLMove(ListEnd whereFrom, ListEnd whereTo) {
+        LMoveArgs args = LMoveArgs.Builder.leftLeft();
+        if (whereFrom.equals(ListEnd.RIGHT)) {
+            if (whereTo.equals(ListEnd.LEFT)) {
+                args = LMoveArgs.Builder.rightLeft();
+            } else {
+                args = LMoveArgs.Builder.rightRight();
+            }
+        } else if (whereTo.equals(ListEnd.RIGHT)) {
+            args = LMoveArgs.Builder.leftRight();
+        }
+        return args;
     }
 }
