@@ -2,14 +2,15 @@ package cloud.anypoint.redis.internal.operation;
 
 import static cloud.anypoint.redis.internal.util.ErrorDecorator.mapErrors;
 
+import cloud.anypoint.redis.api.attributes.ScanAttributes;
 import cloud.anypoint.redis.internal.connection.LettuceRedisConnection;
 import cloud.anypoint.redis.internal.exception.NilValueException;
 import cloud.anypoint.redis.internal.metadata.NilErrorTypeProvider;
 import cloud.anypoint.redis.internal.metadata.AllCommandsErrorTypeProvider;
 import cloud.anypoint.redis.internal.metadata.WrongTypeErrorTypeProvider;
 import cloud.anypoint.redis.internal.metadata.ZrankOutputTypeResolver;
-import io.lettuce.core.ScoredValue;
-import io.lettuce.core.ZAddArgs;
+import io.lettuce.core.*;
+import org.mule.runtime.core.api.util.StringUtils;
 import org.mule.runtime.extension.api.annotation.error.Throws;
 import org.mule.runtime.extension.api.annotation.metadata.MetadataKeyId;
 import org.mule.runtime.extension.api.annotation.metadata.OutputResolver;
@@ -24,9 +25,12 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import reactor.core.publisher.Mono;
 
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
+import java.util.stream.Collectors;
 
 public class SortedSetCommandOperations {
     private final Logger LOGGER = LoggerFactory.getLogger(SortedSetCommandOperations.class);
@@ -111,6 +115,40 @@ public class SortedSetCommandOperations {
                 result -> callback.success(Result.<Object, Void>builder()
                     .output(result)
                     .build()),
+                callback::error);
+    }
+    @DisplayName("ZSCAN")
+    @Throws({AllCommandsErrorTypeProvider.class, WrongTypeErrorTypeProvider.class})
+    public void zscan(@Connection LettuceRedisConnection connection,
+                      String key,
+                      Integer cursor,
+                      @Optional String match,
+                      @Optional Integer count,
+                      CompletionCallback<List<Map<String, Double>>, ScanAttributes> callback) {
+        ScanArgs args = new ScanArgs();
+        if (!StringUtils.isEmpty(match)) {
+            args.match(match);
+        }
+        if (null != count) {
+            args.limit(count);
+        }
+        LOGGER.debug("ZSCAN {} {}", key, cursor);
+        Mono<ScoredValueScanCursor<String>> cmd = connection.commands().zscan(key, ScanCursor.of(cursor.toString()), args);
+        mapErrors(cmd, "ZSCAN", key)
+            .subscribe(
+                result -> {
+                    List<Map<String, Double>> payload = result.getValues().stream()
+                        .map(item -> Collections.singletonMap(item.getValue(), item.getScore()))
+                        .collect(Collectors.toList());
+                    callback.success(
+                        Result.<List<Map<String, Double>>, ScanAttributes>builder()
+                            .output(payload)
+                            .attributes(new ScanAttributes() {{
+                                LOGGER.debug("cursor {}", result.getCursor());
+                                setCursor(Integer.parseInt(result.getCursor()));
+                            }})
+                            .build());
+                },
                 callback::error);
     }
 }

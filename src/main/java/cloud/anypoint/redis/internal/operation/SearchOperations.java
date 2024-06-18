@@ -2,6 +2,7 @@ package cloud.anypoint.redis.internal.operation;
 
 import cloud.anypoint.redis.api.paging.LettuceKeyPagingProvider;
 import cloud.anypoint.redis.api.paging.LettuceMapPagingProvider;
+import cloud.anypoint.redis.api.paging.LettuceScoredValuePagingProvider;
 import cloud.anypoint.redis.api.paging.LettuceValuePagingProvider;
 import cloud.anypoint.redis.internal.connection.LettuceRedisConnection;
 import cloud.anypoint.redis.internal.metadata.AllCommandsErrorTypeProvider;
@@ -85,5 +86,25 @@ public class SearchOperations {
 
         return new LettuceMapPagingProvider((connection, cursor) ->
                 mapErrors(connection.commands().hscan(key, MapScanCursor.of(cursor), args), "HSCAN"));
+    }
+
+    @Summary("Uses the ZSCAN command repeatedly to retrieve all set members that match the arguments, streaming the results and automatically handling the cursor returned from redis.")
+    @MediaType(value = "application/java", strict = true)
+    @Throws({AllCommandsErrorTypeProvider.class, WrongTypeErrorTypeProvider.class})
+    public PagingProvider<LettuceRedisConnection, Map<String, Double>> searchSortedSetMembers(
+            String key,
+            @Optional String match,
+            @Optional Integer pageSizeHint) {
+        LOGGER.debug("Search set members with ZSCAN");
+        ScanArgs args = new ScanArgs();
+        if (!StringUtils.isEmpty(match)) {
+            args.match(match);
+        }
+        if (null != pageSizeHint) {
+            args.limit(pageSizeHint);
+        }
+
+        return new LettuceScoredValuePagingProvider((connection, cursor) ->
+                mapErrors(connection.commands().zscan(key, ScoredValueScanCursor.of(cursor), args), "ZSCAN"));
     }
 }

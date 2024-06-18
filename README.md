@@ -83,6 +83,7 @@ The Send Command operation allows a developer to send any arbitrary command and 
 #### Sorted Set Commands
 * `ZADD`
 * `ZRANK`
+* `ZSCAN`
 * `ZSCORE`
 
 #### Geospatial Commands
@@ -114,3 +115,4 @@ until a cursor value of 0 is received.
 * Search keys
 * Search hash fields
 * Search set members
+* Search sorted set members

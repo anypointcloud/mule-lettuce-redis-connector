@@ -13,7 +13,7 @@ import java.util.Map;
 import java.util.function.BiFunction;
 
 public class LettuceMapPagingProvider extends LettucePagingProvider<Map<String, String>> {
-    private final Logger LOGGER = LoggerFactory.getLogger(LettuceKeyPagingProvider.class);
+    private final Logger LOGGER = LoggerFactory.getLogger(LettuceMapPagingProvider.class);
     private final BiFunction<LettuceRedisConnection, String, Mono<MapScanCursor<String, String>>> cursorCommand;
 
     public LettuceMapPagingProvider(BiFunction<LettuceRedisConnection, String, Mono<MapScanCursor<String, String>>> cursorCommand) {
