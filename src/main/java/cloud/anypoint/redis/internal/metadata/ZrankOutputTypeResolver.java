@@ -15,8 +15,8 @@ import java.util.Set;
 public class ZrankOutputTypeResolver implements TypeKeysResolver, OutputTypeResolver<Boolean> {
 
     @Override
-    public MetadataType getOutputType(MetadataContext metadataContext, Boolean b) throws MetadataResolvingException, ConnectionException {
-        if (b) {
+    public MetadataType getOutputType(MetadataContext metadataContext, Boolean withScore) throws MetadataResolvingException, ConnectionException {
+        if (withScore) {
             ObjectTypeBuilder outputPayloadTypeBuilder = metadataContext.getTypeBuilder().objectType();
             outputPayloadTypeBuilder.addField().key("rank").value(metadataContext.getTypeBuilder().numberType());
             outputPayloadTypeBuilder.addField().key("score").value(metadataContext.getTypeBuilder().numberType());

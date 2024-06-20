@@ -35,4 +35,6 @@ public class ErrorDecorator {
                 return t;
             });
     }
+
+    // TODO: ERR The XGROUP subcommand requires the key to exist. Note that for CREATE you may want to use the MKSTREAM option to create an empty stream automatically.
 }

@@ -8,16 +8,14 @@ import cloud.anypoint.redis.api.stream.StreamWatermark;
 import cloud.anypoint.redis.internal.connection.LettuceRedisConnection;
 import cloud.anypoint.redis.internal.exception.ArgumentException;
 import cloud.anypoint.redis.internal.exception.NilValueException;
-import cloud.anypoint.redis.internal.metadata.AllCommandsErrorTypeProvider;
-import cloud.anypoint.redis.internal.metadata.ArgumentErrorTypeProvider;
-import cloud.anypoint.redis.internal.metadata.NilErrorTypeProvider;
-import cloud.anypoint.redis.internal.metadata.WrongTypeErrorTypeProvider;
+import cloud.anypoint.redis.internal.metadata.*;
 import io.lettuce.core.*;
 import org.mule.runtime.api.meta.ExpressionSupport;
 import org.mule.runtime.extension.api.annotation.Alias;
 import org.mule.runtime.extension.api.annotation.Expression;
 import org.mule.runtime.extension.api.annotation.dsl.xml.ParameterDsl;
 import org.mule.runtime.extension.api.annotation.error.Throws;
+import org.mule.runtime.extension.api.annotation.metadata.OutputResolver;
 import org.mule.runtime.extension.api.annotation.param.Connection;
 import org.mule.runtime.extension.api.annotation.param.Content;
 import org.mule.runtime.extension.api.annotation.param.MediaType;
@@ -130,6 +128,8 @@ public class StreamCommandOperations {
             callback::error);
     }
 
+
+
     @DisplayName("XDEL")
     @Throws({AllCommandsErrorTypeProvider.class, ArgumentErrorTypeProvider.class, WrongTypeErrorTypeProvider.class})
     public void xdel(@Connection LettuceRedisConnection connection,
@@ -160,6 +160,68 @@ public class StreamCommandOperations {
         Mono<Long> cmd = connection.commands().xtrim(key, args);
         mapErrors(cmd, "XTRIM", key).subscribe(
             result -> callback.success(Result.<Long, Void>builder()
+                .output(result)
+                .build()),
+            callback::error);
+    }
+
+    @DisplayName("XGROUP CREATE")
+    @Throws({AllCommandsErrorTypeProvider.class, WrongTypeErrorTypeProvider.class})
+    public void xgroupCreate(@Connection LettuceRedisConnection connection,
+                             String key,
+                             String group,
+                             @Optional String lastEntryId,
+                             @DisplayName("MKSTREAM") boolean mkstream,
+                             @DisplayName("ENTRIESREAD") @Optional Long entriesRead,
+                             CompletionCallback<Void, Void> callback) {
+        LOGGER.debug("XGROUP CREATE {} {}", key, group);
+        XReadArgs.StreamOffset<String> offset = XReadArgs.StreamOffset.latest(key);
+        if (null != group) {
+            offset = XReadArgs.StreamOffset.from(key, lastEntryId);
+        }
+        XGroupCreateArgs args = new XGroupCreateArgs();
+        if (mkstream) {
+            args = args.mkstream(mkstream);
+        }
+        if (null != entriesRead) {
+            args = args.entriesRead(entriesRead);
+        }
+        Mono<String> cmd = connection.commands().xgroupCreate(offset, group, args);
+        mapErrors(cmd, "XGROUP CREATE", key).subscribe(
+            result -> callback.success(Result.<Void, Void>builder()
+                .build()),
+            callback::error);
+    }
+
+    @DisplayName("XGROUP DESTROY")
+    @Throws({AllCommandsErrorTypeProvider.class, WrongTypeErrorTypeProvider.class})
+    public void xgroupDestroy(@Connection LettuceRedisConnection connection,
+                              String key,
+                              String group,
+                              CompletionCallback<Boolean, Void> callback) {
+        LOGGER.debug("XGROUP DESTROY {} {}", key, group);
+        Mono<Boolean> cmd = connection.commands().xgroupDestroy(key, group);
+        mapErrors(cmd, "XGROUP DESTROY", key).subscribe(
+            result -> callback.success(Result.<Boolean, Void>builder()
+                .output(result)
+                .build()),
+            callback::error);
+    }
+
+    @DisplayName("XINFO GROUPS")
+    @OutputResolver(output = XinfoOutputTypeResolver.class)
+    @Throws({AllCommandsErrorTypeProvider.class, WrongTypeErrorTypeProvider.class})
+    public void xinfoGroups(@Connection LettuceRedisConnection connection,
+                            String key,
+                            CompletionCallback<List<Map<String, Object>>, Void> callback) {
+        LOGGER.debug("XINFO GROUPS {}", key);
+        Flux<Map<String, Object>> baseCmd = connection.commands().xinfoGroups(key)
+            .mapNotNull(o -> (Flux.fromIterable((List<Object>) o)
+                .buffer(2)
+                .collectMap(pair -> pair.get(0).toString(), pair -> pair.get(1))
+                .block()));
+        mapErrors(baseCmd.collectList(), "XINFO GROUPS", key).subscribe(
+            result -> callback.success(Result.<List<Map<String, Object>>, Void>builder()
                 .output(result)
                 .build()),
             callback::error);
