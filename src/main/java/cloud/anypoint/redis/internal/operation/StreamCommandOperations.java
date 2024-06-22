@@ -9,6 +9,7 @@ import cloud.anypoint.redis.internal.connection.LettuceRedisConnection;
 import cloud.anypoint.redis.internal.exception.ArgumentException;
 import cloud.anypoint.redis.internal.exception.NilValueException;
 import cloud.anypoint.redis.internal.metadata.*;
+import com.sun.org.apache.xpath.internal.Arg;
 import io.lettuce.core.*;
 import org.mule.runtime.api.meta.ExpressionSupport;
 import org.mule.runtime.extension.api.annotation.Alias;
@@ -21,6 +22,7 @@ import org.mule.runtime.extension.api.annotation.param.Content;
 import org.mule.runtime.extension.api.annotation.param.MediaType;
 import org.mule.runtime.extension.api.annotation.param.Optional;
 import org.mule.runtime.extension.api.annotation.param.display.DisplayName;
+import org.mule.runtime.extension.api.annotation.param.display.Summary;
 import org.mule.runtime.extension.api.runtime.operation.Result;
 import org.mule.runtime.extension.api.runtime.process.CompletionCallback;
 import org.slf4j.Logger;
@@ -91,11 +93,11 @@ public class StreamCommandOperations {
     public void xread(@Connection LettuceRedisConnection connection,
                       @DisplayName("COUNT") @Optional Integer count,
                       @DisplayName("BLOCK") @Optional Integer block,
-                      @DisplayName("STREAM") @Alias("stream-watermarks") @ParameterDsl(allowReferences = false) List<StreamWatermark> streamWatermarks,
+                      @DisplayName("STREAMS") @Alias("streams") @ParameterDsl(allowReferences = false) List<StreamWatermark> streamWatermarks,
                       CompletionCallback<Map<String, List<StreamEntry>>, Void> callback) {
         LOGGER.debug("XREAD {}", streamWatermarks.stream().map(w -> w.getKey()).collect(Collectors.joining(", ")));
         if (streamWatermarks.isEmpty()) {
-            callback.error(new ArgumentException("XREAD", new IllegalArgumentException("STREAM must contain at least one key and id")));
+            callback.error(new ArgumentException("XREAD", new IllegalArgumentException("STREAMS must contain at least one key and id")));
             return;
         }
         XReadArgs args = new XReadArgs();
@@ -128,7 +130,72 @@ public class StreamCommandOperations {
             callback::error);
     }
 
+    @DisplayName("XREADGROUP")
+    @Throws({AllCommandsErrorTypeProvider.class, ArgumentErrorTypeProvider.class, WrongTypeErrorTypeProvider.class})
+    public void xreadgroup(@Connection LettuceRedisConnection connection,
+                           String group,
+                           String consumer,
+                           @DisplayName("COUNT") @Optional Long count,
+                           @DisplayName("BLOCK") @Optional Long block,
+                           @DisplayName("NOACK") @Optional boolean noack,
+                           @DisplayName("STREAMS") @Alias("streams") @ParameterDsl(allowReferences = false) List<StreamWatermark> streamWatermarks,
+                           CompletionCallback<Map<String, List<StreamEntry>>, Void> callback) {
+        LOGGER.debug("XREADGROUP {}", streamWatermarks.stream().map(w -> w.getKey()).collect(Collectors.joining(", ")));
 
+        if (streamWatermarks.isEmpty()) {
+            callback.error(new ArgumentException("XREADGROUP", new IllegalArgumentException("STREAMS must contain at least one key and id")));
+            return;
+        }
+        XReadArgs args = new XReadArgs();
+        if (null != count) {
+            args = args.count(count);
+        }
+        if (null != block) {
+            args = args.block(block);
+        }
+        XReadArgs.StreamOffset<String>[] offsets = streamWatermarks.stream()
+                .map(w -> XReadArgs.StreamOffset.from(w.getKey(), w.getId()))
+                .toArray(XReadArgs.StreamOffset[]::new);
+
+        Flux<StreamMessage<String, String>> cmd = connection.commands().xreadgroup(Consumer.from(group, consumer), args, offsets);
+
+        mapErrors(cmd.collectList(), "XREADGROUP").subscribe(
+            result -> {
+                Map<String, List<StreamEntry>> resultMap = new HashMap<>();
+                result.stream().forEach( streamMessage -> {
+                    if (! (resultMap.containsKey(streamMessage.getStream()))) {
+                        resultMap.put(streamMessage.getStream(), new ArrayList<>());
+                    }
+                    resultMap.get(streamMessage.getStream()).add(
+                            new StreamEntry(streamMessage.getId(), streamMessage.getBody()));
+                });
+                callback.success(Result.<Map<String, List<StreamEntry>>, Void>builder()
+                    .output(resultMap)
+                    .build());
+            },
+            callback::error);
+    }
+
+    @DisplayName("XACK")
+    @Throws({AllCommandsErrorTypeProvider.class, ArgumentErrorTypeProvider.class, WrongTypeErrorTypeProvider.class})
+    public void xack(@Connection LettuceRedisConnection connection,
+                     String key,
+                     String group,
+                     List<String> ids,
+                     CompletionCallback<Long, Void> callback) {
+        LOGGER.debug("XACK {} {}", key, group);
+        if (ids.isEmpty()) {
+            callback.error(new ArgumentException("XACK", new IllegalArgumentException("XACK requires at least one entry id")));
+            return;
+        }
+        Mono<Long> cmd = connection.commands().xack(key, group, ids.stream().toArray(String[]::new));
+        mapErrors(cmd, "XACK", key).subscribe(
+            result -> callback.success(Result.<Long, Void>builder()
+                .output(result)
+                .build()),
+            callback::error
+        );
+    }
 
     @DisplayName("XDEL")
     @Throws({AllCommandsErrorTypeProvider.class, ArgumentErrorTypeProvider.class, WrongTypeErrorTypeProvider.class})
@@ -170,13 +237,13 @@ public class StreamCommandOperations {
     public void xgroupCreate(@Connection LettuceRedisConnection connection,
                              String key,
                              String group,
-                             @Optional String lastEntryId,
+                             @Optional @Summary("ID of the last delivered entry. Use $ or leave this blank to indicate the current last entry of the stream") String lastEntryId,
                              @DisplayName("MKSTREAM") boolean mkstream,
                              @DisplayName("ENTRIESREAD") @Optional Long entriesRead,
                              CompletionCallback<Void, Void> callback) {
         LOGGER.debug("XGROUP CREATE {} {}", key, group);
         XReadArgs.StreamOffset<String> offset = XReadArgs.StreamOffset.latest(key);
-        if (null != group) {
+        if (null != lastEntryId) {
             offset = XReadArgs.StreamOffset.from(key, lastEntryId);
         }
         XGroupCreateArgs args = new XGroupCreateArgs();
