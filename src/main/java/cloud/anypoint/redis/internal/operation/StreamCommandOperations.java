@@ -141,7 +141,6 @@ public class StreamCommandOperations {
                            @DisplayName("STREAMS") @Alias("streams") @ParameterDsl(allowReferences = false) List<StreamWatermark> streamWatermarks,
                            CompletionCallback<Map<String, List<StreamEntry>>, Void> callback) {
         LOGGER.debug("XREADGROUP {}", streamWatermarks.stream().map(w -> w.getKey()).collect(Collectors.joining(", ")));
-
         if (streamWatermarks.isEmpty()) {
             callback.error(new ArgumentException("XREADGROUP", new IllegalArgumentException("STREAMS must contain at least one key and id")));
             return;
@@ -181,7 +180,7 @@ public class StreamCommandOperations {
     public void xack(@Connection LettuceRedisConnection connection,
                      String key,
                      String group,
-                     List<String> ids,
+                     @ParameterDsl(allowReferences = false) List<String> ids,
                      CompletionCallback<Long, Void> callback) {
         LOGGER.debug("XACK {} {}", key, group);
         if (ids.isEmpty()) {

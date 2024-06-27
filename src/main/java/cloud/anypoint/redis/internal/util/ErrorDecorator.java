@@ -1,5 +1,6 @@
 package cloud.anypoint.redis.internal.util;
 
+import cloud.anypoint.redis.internal.exception.CommandException;
 import cloud.anypoint.redis.internal.exception.SyntaxErrorException;
 import cloud.anypoint.redis.internal.exception.TimeoutException;
 import cloud.anypoint.redis.internal.exception.WrongTypeException;
@@ -32,9 +33,7 @@ public class ErrorDecorator {
                 if (t.getMessage().equals("ERR syntax error")) {
                     return new SyntaxErrorException(commandText, t);
                 }
-                return t;
+                return new CommandException(t);
             });
     }
-
-    // TODO: ERR The XGROUP subcommand requires the key to exist. Note that for CREATE you may want to use the MKSTREAM option to create an empty stream automatically.
 }

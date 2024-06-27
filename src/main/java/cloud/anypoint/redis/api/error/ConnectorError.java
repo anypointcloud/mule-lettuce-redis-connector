@@ -6,10 +6,11 @@ import java.util.Optional;
 
 public enum ConnectorError implements ErrorTypeDefinition<ConnectorError> {
     SYNTAX,
+    COMMAND,
     ARGUMENT(SYNTAX),
     NIL,
-    WRONG_TYPE,
-    OUT_OF_RANGE,
+    WRONG_TYPE(COMMAND),
+    OUT_OF_RANGE(COMMAND),
     TIMEOUT;
 
     private ErrorTypeDefinition<? extends Enum<?>> parent;

@@ -11,6 +11,7 @@ public class AllCommandsErrorTypeProvider implements ErrorTypeProvider {
     @Override
     public Set<ErrorTypeDefinition> getErrorTypes() {
         Set<ErrorTypeDefinition> errorTypes = new HashSet<>();
+        errorTypes.add(ConnectorError.COMMAND);
         errorTypes.add(ConnectorError.TIMEOUT);
         errorTypes.add(ConnectorError.SYNTAX);
         return errorTypes;
