@@ -6,13 +6,13 @@ import cloud.anypoint.redis.api.attributes.ScanAttributes;
 import cloud.anypoint.redis.internal.connection.LettuceRedisConnection;
 import cloud.anypoint.redis.internal.exception.ArgumentException;
 import cloud.anypoint.redis.internal.exception.NilValueException;
-import cloud.anypoint.redis.internal.metadata.ArgumentErrorTypeProvider;
-import cloud.anypoint.redis.internal.metadata.NilErrorTypeProvider;
-import cloud.anypoint.redis.internal.metadata.AllCommandsErrorTypeProvider;
-import cloud.anypoint.redis.internal.metadata.WrongTypeErrorTypeProvider;
+import cloud.anypoint.redis.internal.metadata.*;
 import io.lettuce.core.*;
 import org.mule.runtime.core.api.util.StringUtils;
+import org.mule.runtime.extension.api.annotation.dsl.xml.ParameterDsl;
 import org.mule.runtime.extension.api.annotation.error.Throws;
+import org.mule.runtime.extension.api.annotation.metadata.MetadataKeyId;
+import org.mule.runtime.extension.api.annotation.metadata.OutputResolver;
 import org.mule.runtime.extension.api.annotation.param.Connection;
 import org.mule.runtime.extension.api.annotation.param.Content;
 import org.mule.runtime.extension.api.annotation.param.MediaType;
@@ -27,6 +27,8 @@ import reactor.core.publisher.Mono;
 
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 public class HashCommandOperations {
     private final Logger LOGGER = LoggerFactory.getLogger(HashCommandOperations.class);
@@ -85,17 +87,18 @@ public class HashCommandOperations {
     @Throws({ArgumentErrorTypeProvider.class, AllCommandsErrorTypeProvider.class, WrongTypeErrorTypeProvider.class})
     public void hmget(@Connection LettuceRedisConnection connection,
                       String key,
-                      @Content List<String> fieldNames,
-                      CompletionCallback<List<String>, Void> callback) {
+                      @ParameterDsl(allowInlineDefinition = true, allowReferences = false) List<String> fieldNames,
+                      CompletionCallback<Map<String, String>, Void> callback) {
         if (fieldNames.isEmpty()) {
             callback.error(new ArgumentException("HMGET", new IllegalArgumentException("at least one field is required")));
         } else {
             Flux<KeyValue<String, String>> cmd = connection.commands().hmget(key, fieldNames.stream().toArray(String[]::new));
-            mapErrors(cmd.map(kv -> kv.getValue()).collectList(), "HMGET", key)
+            mapErrors(cmd.collectMap(KeyValue::getKey, kv -> kv.getValueOrElse(null)), "HMGET", key)
                 .subscribe(
-                    result -> callback.success(Result.<List<String>, Void>builder()
-                        .output(result)
-                        .build()),
+                        (result) ->
+                            callback.success(Result.<Map<String, String>, Void>builder()
+                                .output(result)
+                                .build()),
                     callback::error);
         }
     }

@@ -2,24 +2,22 @@ package cloud.anypoint.redis.internal.operation;
 
 import static cloud.anypoint.redis.internal.util.ErrorDecorator.mapErrors;
 
+import cloud.anypoint.redis.api.stream.PendingDetailsArgs;
 import cloud.anypoint.redis.api.stream.StreamEntry;
 import cloud.anypoint.redis.api.stream.StreamEvictionOption;
 import cloud.anypoint.redis.api.stream.StreamWatermark;
 import cloud.anypoint.redis.internal.connection.LettuceRedisConnection;
 import cloud.anypoint.redis.internal.exception.ArgumentException;
-import cloud.anypoint.redis.internal.exception.NilValueException;
 import cloud.anypoint.redis.internal.metadata.*;
-import com.sun.org.apache.xpath.internal.Arg;
 import io.lettuce.core.*;
 import org.mule.runtime.api.meta.ExpressionSupport;
 import org.mule.runtime.extension.api.annotation.Alias;
 import org.mule.runtime.extension.api.annotation.Expression;
 import org.mule.runtime.extension.api.annotation.dsl.xml.ParameterDsl;
 import org.mule.runtime.extension.api.annotation.error.Throws;
+import org.mule.runtime.extension.api.annotation.metadata.MetadataKeyId;
 import org.mule.runtime.extension.api.annotation.metadata.OutputResolver;
-import org.mule.runtime.extension.api.annotation.param.Connection;
-import org.mule.runtime.extension.api.annotation.param.Content;
-import org.mule.runtime.extension.api.annotation.param.MediaType;
+import org.mule.runtime.extension.api.annotation.param.*;
 import org.mule.runtime.extension.api.annotation.param.Optional;
 import org.mule.runtime.extension.api.annotation.param.display.DisplayName;
 import org.mule.runtime.extension.api.annotation.param.display.Summary;
@@ -28,7 +26,6 @@ import org.mule.runtime.extension.api.runtime.process.CompletionCallback;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import reactor.core.publisher.Flux;
-import reactor.core.publisher.GroupedFlux;
 import reactor.core.publisher.Mono;
 
 import java.util.*;
@@ -230,6 +227,22 @@ public class StreamCommandOperations {
                 .build()),
             callback::error);
     }
+// TOOD: Complete XPENDING
+//    @DisplayName("XPENDING")
+//    @MediaType(value = "application/java", strict = true)
+//    @OutputResolver(output = XPendingOutputTypeResolver.class)
+//    @Throws({AllCommandsErrorTypeProvider.class, WrongTypeErrorTypeProvider.class})
+//    public void xpending(@Connection LettuceRedisConnection connection,
+//                         String key,
+//                         String group,
+//                         @Optional
+//                             @ParameterDsl(allowReferences = false)
+//                             @Expression(ExpressionSupport.NOT_SUPPORTED)
+//                             @MetadataKeyId
+//                             PendingDetailsArgs pendingDetailsArgs,
+//                         CompletionCallback<Object, Void> callback) {
+//        XPendingArgs args = new XPendingArgs();
+//    }
 
     @DisplayName("XGROUP CREATE")
     @Throws({AllCommandsErrorTypeProvider.class, WrongTypeErrorTypeProvider.class})

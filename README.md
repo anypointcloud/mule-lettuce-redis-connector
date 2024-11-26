@@ -96,10 +96,15 @@ The Send Command operation allows a developer to send any arbitrary command and 
 * `PUBLISH`
 
 #### Stream Commands
+* `XACK`
 * `XADD`
 * `XDEL`
+* `XINFO GROUPS`
+* `XGROUP CREATE`
+* `XGROUP DESTROY`
 * `XRANGE`
 * `XREAD`
+* `XREADGROUP`
 * `XTRIM`
 
 ### Sources
