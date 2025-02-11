@@ -136,6 +136,24 @@ public class HashCommandOperations {
         }
     }
 
+    @DisplayName("HINCRBY")
+    @Throws({AllCommandsErrorTypeProvider.class, WrongTypeErrorTypeProvider.class})
+    public void hincrby(
+            @Connection LettuceRedisConnection connection,
+            String key,
+            String field,
+            Long increment,
+            CompletionCallback<Long, Void> callback) {
+        LOGGER.debug("HINCRBY {} {} {}", key, field, increment);
+        mapErrors(connection.commands().hincrby(key, field, increment), "HINCRBY", key)
+                .subscribe(
+                        result -> callback.success(Result.<Long, Void>builder()
+                                .output(result)
+                                .build()),
+                        callback::error
+                );
+    }
+
     @DisplayName("HSCAN")
     @Throws({AllCommandsErrorTypeProvider.class, WrongTypeErrorTypeProvider.class})
     public void hscan(@Connection LettuceRedisConnection connection,

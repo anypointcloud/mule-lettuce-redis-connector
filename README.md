@@ -52,6 +52,7 @@ The Send Command operation allows a developer to send any arbitrary command and 
 * `HEXISTS`
 * `HGET`
 * `HGETALL`
+* `HINCRBY`
 * `HLEN`
 * `HMGET`
 * `HSCAN`
