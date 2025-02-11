@@ -12,7 +12,7 @@ Add this dependency to your application pom.xml
 ```
 <groupId>cloud.anypoint</groupId>
 <artifactId>mule-lettuce-redis-connector</artifactId>
-<version>0.1.21</version>
+<version>0.1.23</version>
 <classifier>mule-plugin</classifier>
 ```
 
