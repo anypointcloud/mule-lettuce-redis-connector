@@ -151,4 +151,23 @@ public class SortedSetCommandOperations {
                 },
                 callback::error);
     }
+
+    @DisplayName("ZINCRBY")
+    @Throws({AllCommandsErrorTypeProvider.class, WrongTypeErrorTypeProvider.class})
+    public void zincrby(@Connection LettuceRedisConnection connection,
+                        String key,
+                        Double increment,
+                        String member,
+                        CompletionCallback<Double, Void> callback) {
+        LOGGER.debug("ZINCRBY {} {} {}", key, increment, member);
+        Mono<Double> cmd = connection.commands().zincrby(key, increment, member);
+        mapErrors(cmd, "ZINCRBY", key)
+            .subscribe(
+                result -> {
+                    callback.success(Result.<Double, Void>builder()
+                        .output(result)
+                        .build());
+                },
+            callback::error);
+    }
 }

@@ -12,7 +12,7 @@ Add this dependency to your application pom.xml
 ```
 <groupId>cloud.anypoint</groupId>
 <artifactId>mule-lettuce-redis-connector</artifactId>
-<version>0.1.23</version>
+<version>0.1.24</version>
 <classifier>mule-plugin</classifier>
 ```
 
@@ -83,6 +83,7 @@ The Send Command operation allows a developer to send any arbitrary command and 
 
 #### Sorted Set Commands
 * `ZADD`
+* `ZINCRBY`
 * `ZRANK`
 * `ZSCAN`
 * `ZSCORE`
